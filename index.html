@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Digital Life: 7-Island 3D Biosphere &amp; Evolution Lab</title>
+    <title>Digital Life: 7-Island Voxel Biosphere, ANN &amp; Human Revolutions</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -1042,7 +1042,7 @@
 
 <body class="relative w-screen h-screen overflow-hidden text-slate-100">
 
-    <!-- 3D THREE.JS ARCHIPELAGO & 2D TELEMETRY OVERLAY -->
+    <!-- 3D THREE.JS VOXEL ARCHIPELAGO & 2D TELEMETRY OVERLAY -->
     <canvas id="world3dCanvas" class="fixed inset-0 w-full h-full block z-0 pointer-events-none"></canvas>
     <canvas id="simCanvas" class="fixed inset-0 w-full h-full block cursor-grab active:cursor-grabbing z-10"></canvas>
 
@@ -1099,11 +1099,11 @@
                         <h1 class="text-sm sm:text-base font-bold tracking-wide text-white">DIGITAL LIFE EVOLUTION LAB
                         </h1>
                         <span
-                            class="text-[10px] font-mono px-1.5 py-0.5 rounded-md bg-teal-500/15 text-teal-300 border border-teal-400/35">7-ISLAND
-                            3D</span>
+                            class="text-[10px] font-mono px-1.5 py-0.5 rounded-md bg-teal-500/15 text-teal-300 border border-teal-400/35">VOXEL
+                            GLSL</span>
                     </div>
-                    <p class="text-[11px] text-slate-400 hidden sm:block">Neuroevolution &bull; Speciation &bull;
-                        Biosphere &amp; Lineage</p>
+                    <p class="text-[11px] text-slate-400 hidden sm:block">Minecraft Voxels &bull; GLSL Shaders &bull;
+                        Neataptic ANN &bull; Revolutions</p>
                 </div>
             </div>
 
@@ -1121,14 +1121,19 @@
                     <span class="text-[9px] uppercase tracking-wider text-slate-400">Cognitive</span>
                     <span id="hudLeaderCount" class="text-amber-300 font-semibold text-sm">6/84</span>
                 </div>
-                <button data-action="inspect-human" title="Click to inspect a Human ANN"
+                <button data-action="inspect-human" title="Click to inspect & command a Human ANN"
                     class="flex flex-col text-left px-2 py-0.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 border border-amber-400/30 transition">
                     <span class="text-[9px] uppercase tracking-wider text-amber-300">Human Neataptic</span>
                     <span id="hudHumanStage" class="text-amber-200 font-semibold text-xs">0/4 (2&rarr;2&rarr;2)</span>
                 </button>
+                <button data-action="spark-revolution" title="Click to spark a Human-led Revolution!"
+                    class="flex flex-col text-left px-2 py-0.5 rounded-lg bg-rose-500/15 hover:bg-rose-500/30 border border-rose-400/40 transition">
+                    <span class="text-[9px] uppercase tracking-wider text-rose-300">Regime &bull; Rev</span>
+                    <span id="hudRevolutionBadge" class="text-rose-200 font-semibold text-xs">Tribe &bull; 0</span>
+                </button>
                 <div class="flex flex-col">
-                    <span class="text-[9px] uppercase tracking-wider text-slate-400">Civilization</span>
-                    <span id="hudCultureStage" class="text-cyan-300 font-semibold text-xs">Foraging</span>
+                    <span class="text-[9px] uppercase tracking-wider text-slate-400">Tasks</span>
+                    <span id="hudTasksCount" class="text-cyan-300 font-semibold text-sm">0</span>
                 </div>
                 <div class="flex flex-col">
                     <span class="text-[9px] uppercase tracking-wider text-slate-400">Shelters</span>
@@ -1204,7 +1209,7 @@
 
         <div id="simToast"
             class="opacity-0 transition-opacity duration-300 self-start hud-glass border-teal-400/50 text-teal-200 text-xs font-mono px-3 py-1.5 rounded-xl pointer-events-none">
-            7-Island 3D Biosphere Initialized
+            7-Island Voxel Biosphere Initialized
         </div>
     </div>
 
@@ -1222,12 +1227,13 @@
                     <option value="heatwave">Heatwave Drought</option>
                     <option value="cambrian_boom">Cambrian Boom</option>
                     <option value="stone_to_iron">Stone-to-Iron Village</option>
+                    <option value="people_revolution">People's Revolution</option>
                 </select>
                 <span id="chronicleTickBadge" class="text-[9px] font-mono text-slate-400 shrink-0">Tick 0</span>
             </div>
             <ul id="chronicleList"
                 class="flex flex-col gap-0.5 text-[10px] font-mono text-slate-300 max-h-14 overflow-y-auto hud-scroll">
-                <li class="text-teal-200/90">Biosphere seeded across 7 islands.</li>
+                <li class="text-teal-200/90">Voxel biosphere seeded across 7 islands.</li>
             </ul>
             <div class="pt-1 border-t border-slate-800/80 flex flex-col gap-1">
                 <div class="flex items-center justify-between text-[9px] font-mono text-amber-200/90">
@@ -1252,7 +1258,7 @@
                 <span id="hudAudioLabel">Audio: OFF</span>
             </button>
             <button id="btnSensoryOverlay" data-action="toggle-sensory"
-                title="Toggle Sensory Cone, Target & Fertility Overlay"
+                title="Toggle Sensory Cone, Command Beams & Target Overlay"
                 class="hud-glass hover:border-violet-400/60 text-violet-200 px-2.5 py-2 rounded-xl text-xs font-mono transition">
                 <span id="hudSensoryLabel">Sensors: ON</span>
             </button>
@@ -1391,25 +1397,60 @@
                                     class="insp-fact-v text-amber-300">GROUP</span></div>
                             <div class="insp-fact"><span class="insp-fact-k">Escapes</span><span id="survivalEscapes"
                                     class="insp-fact-v text-emerald-400">0</span></div>
+                            <div class="insp-fact"><span class="insp-fact-k">Faction</span><span id="dnaFactionBadge"
+                                    class="insp-fact-v text-teal-300">COLONY</span></div>
                         </div>
 
+                        <!-- HUMAN ANN EVOLUTION + COMMAND & REVOLUTION PANEL -->
                         <div id="humanEvolutionPanel"
-                            class="hidden px-3 py-2 rounded-xl bg-amber-950/40 border border-amber-400/35 font-mono">
-                            <div class="flex justify-between items-center text-[9px] mb-1">
-                                <span class="text-amber-300 font-bold" id="humanAnnStageName">Stage 0: Tabula
-                                    Rasa</span>
-                                <span class="text-cyan-300" id="humanAnnTopo">2&rarr;2&rarr;2</span>
-                            </div>
-                            <div class="w-full h-1.5 bg-slate-900 rounded-full overflow-hidden mb-1.5">
-                                <div id="humanAnnProgressBar"
-                                    class="h-full bg-gradient-to-r from-amber-400 via-teal-400 to-cyan-300 transition-all duration-200 w-0">
+                            class="hidden px-3 py-2.5 rounded-xl bg-amber-950/40 border border-amber-400/35 font-mono flex flex-col gap-2">
+                            <div>
+                                <div class="flex justify-between items-center text-[9px] mb-1">
+                                    <span class="text-amber-300 font-bold" id="humanAnnStageName">Stage 0: Tabula
+                                        Rasa</span>
+                                    <span class="text-cyan-300" id="humanAnnTopo">2&rarr;2&rarr;2</span>
+                                </div>
+                                <div class="w-full h-1.5 bg-slate-900 rounded-full overflow-hidden mb-1.5">
+                                    <div id="humanAnnProgressBar"
+                                        class="h-full bg-gradient-to-r from-amber-400 via-teal-400 to-cyan-300 transition-all duration-200 w-0">
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between gap-2 text-[9px] text-slate-300">
+                                    <span id="humanAnnSynapses">Synapses: 8 &bull; Learned: 0</span>
+                                    <div class="flex items-center gap-1 shrink-0">
+                                        <button data-action="train-human"
+                                            class="px-2 py-1 rounded bg-amber-500/25 hover:bg-amber-500/40 text-amber-200 border border-amber-400/45 transition">Teach
+                                            ANN</button>
+                                        <button data-action="train-all-humans"
+                                            class="px-2 py-1 rounded bg-teal-500/25 hover:bg-teal-500/40 text-teal-200 border border-teal-400/45 transition">All
+                                            Humans</button>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="flex items-center justify-between gap-2 text-[9px] text-slate-300">
-                                <span id="humanAnnSynapses">Synapses: 8 &bull; Learned: 0</span>
-                                <button data-action="train-human"
-                                    class="px-2 py-1 rounded bg-amber-500/25 hover:bg-amber-500/40 text-amber-200 border border-amber-400/45 transition shrink-0">Teach
-                                    ANN</button>
+
+                            <div class="border-t border-amber-400/20 pt-2 flex flex-col gap-1.5">
+                                <div class="flex items-center justify-between text-[9px]">
+                                    <span class="text-cyan-300 font-bold uppercase">Human Task &amp; Revolution</span>
+                                    <span id="humanCmdStats" class="text-slate-300">Cmds: 0 &bull; Revs: 0</span>
+                                </div>
+                                <div class="flex items-center gap-1.5">
+                                    <select id="humanTaskSelect"
+                                        class="flex-1 min-w-0 bg-slate-950/90 border border-cyan-500/35 rounded-lg px-1.5 py-1 text-[10px] text-cyan-200 focus:outline-none">
+                                        <option value="Harvest Fruit">Task: Harvest Fruit</option>
+                                        <option value="Build Shelter">Task: Build Shelter</option>
+                                        <option value="Guard Colony">Task: Guard Colony</option>
+                                        <option value="Tend Orchard">Task: Tend Orchard</option>
+                                        <option value="Explore Archipelago">Task: Scout Islands</option>
+                                    </select>
+                                    <button data-action="issue-human-task"
+                                        class="px-2 py-1 rounded-lg bg-cyan-500/25 hover:bg-cyan-500/40 text-cyan-100 border border-cyan-400/45 text-[10px] font-semibold shrink-0 transition">
+                                        Assign All
+                                    </button>
+                                </div>
+                                <button data-action="spark-revolution"
+                                    class="w-full py-1.5 px-2 rounded-lg bg-gradient-to-r from-rose-500/30 to-amber-500/25 hover:from-rose-500/45 hover:to-amber-500/40 text-rose-100 border border-rose-400/50 text-[10px] font-bold tracking-wide transition">
+                                    Spark Revolution &amp; Rally Faction
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -1452,6 +1493,8 @@
                                         <option value="Guard Colony">Guard Colony</option>
                                         <option value="Patrol Reef &amp; Currents">Patrol Reef &amp; Currents</option>
                                         <option value="Seek Spring &amp; Heal">Seek Spring &amp; Heal</option>
+                                        <option value="Tend Orchard">Tend Orchard</option>
+                                        <option value="Join Revolution">Join Revolution</option>
                                     </select>
                                 </label>
                                 <div class="insp-niche">
@@ -1517,7 +1560,7 @@
                 <div class="flex items-center justify-between">
                     <h2 class="text-[11px] font-bold uppercase tracking-wider text-emerald-300">Exhibition Challenges
                     </h2>
-                    <span id="challengesBadge" class="text-amber-300 font-semibold">0/4 Done</span>
+                    <span id="challengesBadge" class="text-amber-300 font-semibold">0/5 Done</span>
                 </div>
                 <div id="challengesList" class="flex flex-col gap-1.5"></div>
             </div>
@@ -1685,7 +1728,7 @@
                         <input type="checkbox" id="toggleClouds" checked class="sr-only peer"
                             data-toggle="atmosphere-clouds">
                         <div
-                            class="w-8 h-4 bg-slate-800 rounded-full peer peer-checked:bg-teal-500 relative after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:after:translate-x-4">
+                            class="w-8 h-4 bg-slate-800 rounded-full peer peer-checked:bg-teal-500 relative after:content-[''] after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:after:translate-x-4">
                         </div>
                     </label>
 
@@ -1738,6 +1781,7 @@
             <span class="text-teal-300">5</span><span>Cycle Speed (1x/2x/5x)</span>
             <span class="text-teal-300">F</span><span>Follow Selected</span>
             <span class="text-teal-300">V</span><span>Toggle FPV Mode</span>
+            <span class="text-teal-300">R</span><span>Spark Revolution</span>
             <span class="text-teal-300">Tab</span><span>Cycle Specimen</span>
             <span class="text-teal-300">M</span><span>Toggle Web Audio</span>
             <span class="text-teal-300">Esc</span><span>Close / Deselect</span>
@@ -1765,7 +1809,7 @@
                 </button>
                 <select id="spawnSpeciesSelect" data-mode-on-change="spawn"
                     class="bg-transparent text-xs font-mono text-amber-300 font-semibold pr-2 py-1 focus:outline-none cursor-pointer max-w-[145px]">
-                    <option value="human" class="bg-slate-900 text-amber-200 font-bold">Human (Builder)</option>
+                    <option value="human" class="bg-slate-900 text-amber-200 font-bold">Human (Commander)</option>
                     <option value="capybara" class="bg-slate-900 text-amber-300">Capybara (Meadow)</option>
                     <option value="reddeer" class="bg-slate-900 text-amber-200">Red Deer (Terrace)</option>
                     <option value="bison" class="bg-slate-900 text-amber-300">Wild Bison (Herd)</option>
@@ -1797,6 +1841,11 @@
                 class="px-2.5 sm:px-3 py-2 rounded-xl text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800/60 transition flex items-center gap-1.5 shrink-0">
                 <span class="w-2.5 h-2.5 rounded-full bg-sky-400"></span>
                 <span>Add Spring</span>
+            </button>
+
+            <button data-action="spark-revolution"
+                class="px-2.5 sm:px-3 py-2 rounded-xl text-xs font-semibold bg-rose-500/20 hover:bg-rose-500/35 text-rose-200 border border-rose-400/45 transition flex items-center gap-1.5 shrink-0">
+                <span>Revolution</span>
             </button>
 
             <div class="h-6 w-px bg-slate-700/80 mx-0.5 shrink-0"></div>
@@ -2058,14 +2107,15 @@
 
             const STARTING_POPULATION = 100000000;
             const POPULATION_PER_AGENT = 1666666;
-            const STORAGE_SLOTS_KEY = 'digital_life_evolution_slots_v2';
+            const STORAGE_SLOTS_KEY = 'digital_life_evolution_slots_v3';
+            const TILE_STEP = 88;
 
             const HUMAN_ANN_STAGES = [
                 { name: "Stage 0: Tabula Rasa (Nothing)", inSize: 2, hidSize: 2, outSize: 2, minXP: 0 },
                 { name: "Stage 1: Upright Forager", inSize: 4, hidSize: 4, outSize: 2, minXP: 10 },
-                { name: "Stage 2: Toolmaker & Shelter", inSize: 6, hidSize: 6, outSize: 3, minXP: 28 },
+                { name: "Stage 2: Toolmaker & Task-Giver", inSize: 6, hidSize: 6, outSize: 3, minXP: 28 },
                 { name: "Stage 3: Social & Language", inSize: 8, hidSize: 8, outSize: 3, minXP: 56 },
-                { name: "Stage 4: Present-Day Human", inSize: 10, hidSize: 12, outSize: 4, minXP: 95 }
+                { name: "Stage 4: Present-Day Revolutionary", inSize: 10, hidSize: 12, outSize: 4, minXP: 95 }
             ];
 
             const CULTURAL_STAGES = [
@@ -2074,6 +2124,14 @@
                 { name: "Stage 2: Bronze Cultivation", minXP: 45, bonusYield: 1.32, bonusDefense: 0.14 },
                 { name: "Stage 3: Iron Architecture", minXP: 85, bonusYield: 1.48, bonusDefense: 0.22 },
                 { name: "Stage 4: Harmonic Bio-Era", minXP: 140, bonusYield: 1.65, bonusDefense: 0.30 }
+            ];
+
+            const COLONY_REGIMES = [
+                "Harmonic Tribe",
+                "Forager Commune",
+                "Builder Guild",
+                "Vanguard Republic",
+                "Bio-Sovereign Union"
             ];
 
             const SHELTER_TYPES = [
@@ -2093,7 +2151,7 @@
                     burnRate: 1.35,
                     weather: "mist",
                     timeOfDay: 7.2,
-                    narration: "Glacial chill sweeps the archipelago: highland predators stalk mist-shrouded ridges while hardy burrowers adapt."
+                    narration: "Glacial chill sweeps the voxel archipelago: predators stalk mist-shrouded ridges while burrowers adapt."
                 },
                 heatwave: {
                     label: "Heatwave Drought",
@@ -2104,7 +2162,7 @@
                     burnRate: 1.45,
                     weather: "clear",
                     timeOfDay: 14.5,
-                    narration: "Scorching aridity tests hydration reserves: organisms converge around fresh mineral springs and coastal reefs."
+                    narration: "Scorching aridity tests hydration reserves: organisms converge around fresh mineral springs."
                 },
                 cambrian_boom: {
                     label: "Cambrian Boom",
@@ -2126,7 +2184,18 @@
                     burnRate: 0.95,
                     weather: "clear",
                     timeOfDay: 18.8,
-                    narration: "Human builders advance civilization XP and raise specialized shelters across fertile island terraces."
+                    narration: "Human commanders assign tasks and raise Minecraft-textured shelters across fertile island terraces."
+                },
+                people_revolution: {
+                    label: "People's Revolution",
+                    eraIdx: 6,
+                    tempShift: 3,
+                    foodRate: 6,
+                    mutationRate: 0.45,
+                    burnRate: 1.15,
+                    weather: "storm",
+                    timeOfDay: 20.4,
+                    narration: "Revolutionary Humans rally nearby organisms, seize strongholds, and transform colony governance!"
                 }
             };
 
@@ -2255,6 +2324,12 @@
             let tideOffset = 0;
             let compareCreature = null;
             let sustainedAll25ThroughEvent = false;
+            let revolutionCount = 0;
+            let tasksIssuedTotal = 0;
+            let currentRegimeIndex = 0;
+            const revolutionWaves = [];
+            const commandBeams = [];
+
             const raindrops = Array.from({ length: 140 }, () => ({
                 x: Math.random() * 1920,
                 y: Math.random() * 1080,
@@ -2289,13 +2364,13 @@
             ];
 
             const ISLAND_ARCHIPELAGO = [
-                { id: 'hadean', name: '1. Hadean Caldera Isle', x: -1950, y: -1550, radius: 860, color: '#fb923c', topTint: '#6b3e2e', midTint: '#4a2c22', migrationNext: 1 },
-                { id: 'archean', name: '2. Archean Lagoon Atoll', x: 0, y: -2000, radius: 880, color: '#34d399', topTint: '#5e6b38', midTint: '#3e4726', migrationNext: 2 },
-                { id: 'proterozoic', name: '3. Proterozoic Reef Isle', x: 1950, y: -1550, radius: 880, color: '#38bdf8', topTint: '#5b8242', midTint: '#3b572d', migrationNext: 4 },
-                { id: 'cambrian', name: '4. Cambrian Trilobite Key', x: -2100, y: 620, radius: 900, color: '#10b981', topTint: '#658f3d', midTint: '#3d5c29', migrationNext: 0 },
-                { id: 'carboniferous', name: '5. Carboniferous Canopy Isle', x: 2100, y: 620, radius: 920, color: '#4ade80', topTint: '#4f8c36', midTint: '#2f5924', migrationNext: 6 },
-                { id: 'cretaceous', name: '6. Cretaceous Impact Craton', x: -950, y: 2050, radius: 860, color: '#fb7185', topTint: '#69533e', midTint: '#473628', migrationNext: 3 },
-                { id: 'sanctuary', name: '7. Living Biosphere Sanctuary', x: 220, y: 180, radius: 1080, color: '#2dd4bf', topTint: '#6d9c38', midTint: '#3d632c', migrationNext: 5 }
+                { id: 'hadean', name: '1. Hadean Caldera Isle', x: -1950, y: -1550, radius: 860, color: '#fb923c', topTint: '#7a4b38', midTint: '#4a2c22', migrationNext: 1 },
+                { id: 'archean', name: '2. Archean Lagoon Atoll', x: 0, y: -2000, radius: 880, color: '#34d399', topTint: '#658540', midTint: '#3e4726', migrationNext: 2 },
+                { id: 'proterozoic', name: '3. Proterozoic Reef Isle', x: 1950, y: -1550, radius: 880, color: '#38bdf8', topTint: '#669448', midTint: '#3b572d', migrationNext: 4 },
+                { id: 'cambrian', name: '4. Cambrian Trilobite Key', x: -2100, y: 620, radius: 900, color: '#10b981', topTint: '#719e43', midTint: '#3d5c29', migrationNext: 0 },
+                { id: 'carboniferous', name: '5. Carboniferous Canopy Isle', x: 2100, y: 620, radius: 920, color: '#4ade80', topTint: '#599e3c', midTint: '#2f5924', migrationNext: 6 },
+                { id: 'cretaceous', name: '6. Cretaceous Impact Craton', x: -950, y: 2050, radius: 860, color: '#fb7185', topTint: '#7a634b', midTint: '#473628', migrationNext: 3 },
+                { id: 'sanctuary', name: '7. Living Biosphere Sanctuary', x: 220, y: 180, radius: 1080, color: '#2dd4bf', topTint: '#78ad40', midTint: '#3d632c', migrationNext: 5 }
             ];
 
             const EARTH_ERAS = [
@@ -2305,11 +2380,11 @@
                 { name: "Cambrian Trilobite Key", years: "541-485 MYA", subtitle: "Complex sensory organs, armored burrowers & reef predators", eventName: "Cambrian Radiation", oceanColor: "#042233", atmosphereTint: "rgba(16, 185, 129, 0.06)", nutrientBoost: 1.35, mutationBoost: 1.25, allowedSpecies: ["capybara", "armadillo", "clownfish", "moonjelly", "mantaray", "nautilus", "jaguar", "human"] },
                 { name: "Carboniferous Canopy Isle", years: "359-299 MYA", subtitle: "Lush forest groves, canopy gliders & rich orchard humus", eventName: "Forest Canopy Bloom", oceanColor: "#042436", atmosphereTint: "rgba(125, 211, 252, 0.06)", nutrientBoost: 1.55, mutationBoost: 1.0, allowedSpecies: ["capybara", "reddeer", "honeybee", "hummingbird", "flyingsquirrel", "jaguar", "seaotter", "mantaray", "human"] },
                 { name: "Cretaceous Impact Craton", years: "66 MYA", subtitle: "Asteroid shockwave tests resilience across land, sea & sky", eventName: "Asteroid Shockwave", oceanColor: "#061522", atmosphereTint: "rgba(244, 63, 94, 0.09)", nutrientBoost: 0.75, mutationBoost: 1.45, allowedSpecies: ["molerat", "armadillo", "woodlouse", "nautilus", "albatross", "snowleopard", "human"] },
-                { name: "Living Biosphere Sanctuary", years: "Present-Future", subtitle: "Humans & all 25 species thriving across orchards, springs & reefs", eventName: "Seasonal Fruit Harvest", oceanColor: "#031522", atmosphereTint: "rgba(45, 212, 191, 0.03)", nutrientBoost: 1.35, mutationBoost: 1.0, allowedSpecies: null }
+                { name: "Living Biosphere Sanctuary", years: "Present-Future", subtitle: "Humans & all 25 species thriving across voxel orchards, springs & reefs", eventName: "Seasonal Fruit Harvest", oceanColor: "#031522", atmosphereTint: "rgba(45, 212, 191, 0.03)", nutrientBoost: 1.35, mutationBoost: 1.0, allowedSpecies: null }
             ];
 
             const SPECIES_CONFIG = {
-                human: { name: "Human (Homo sapiens)", sphere: "LITHOSPHERE", diet: "OMNIVORE / INVENTOR", color: "#fde047", bodyHex: "#f5c28b", accentHex: "#0ea5e9", hueRange: [28, 36], baseSpeed: 2.15, baseVision: 210, baseSize: 10.2, defense: "TOOLS & SHELTER", ecology: "Thinking toolmaker & builder inventing specialized shelters, orchards & villages" },
+                human: { name: "Human (Homo sapiens)", sphere: "LITHOSPHERE", diet: "OMNIVORE / COMMANDER", color: "#fde047", bodyHex: "#f5c28b", accentHex: "#0ea5e9", hueRange: [28, 36], baseSpeed: 2.15, baseVision: 225, baseSize: 10.4, defense: "TOOLS & REVOLUTION", ecology: "Thinking ANN commander assigning tasks to peers, building voxel villages & sparking revolutions" },
                 capybara: { name: "Capybara", sphere: "LITHOSPHERE", diet: "FRUGIVORE / GRAZER", color: "#fbbf24", bodyHex: "#b47b44", accentHex: "#f59e0b", hueRange: [28, 38], baseSpeed: 1.85, baseVision: 165, baseSize: 9.8, defense: "GROUP DEFENCE", ecology: "Social meadow grazer & spring swimmer fostering calm colony rings" },
                 reddeer: { name: "Red Deer", sphere: "LITHOSPHERE", diet: "HERBIVORE BROWSER", color: "#f97316", bodyHex: "#c25929", accentHex: "#fde68a", hueRange: [18, 28], baseSpeed: 2.25, baseVision: 180, baseSize: 10.4, defense: "AGILE LEAP", ecology: "Browses upper island terraces & alerts herds to predators" },
                 bison: { name: "Wild Bison", sphere: "LITHOSPHERE", diet: "HERD GRAZER", color: "#d97706", bodyHex: "#6d3b1e", accentHex: "#fbbf24", hueRange: [20, 30], baseSpeed: 1.75, baseVision: 155, baseSize: 11.6, defense: "HERD WALL", ecology: "Heavy grassland grazer shaping open meadow corridors" },
@@ -2425,7 +2500,7 @@
             }
 
             function clampCameraToWorld() {
-                // World border removed: unrestricted camera panning across the open world.
+                // Open world panning
             }
 
             function normalizeAngle(a) {
@@ -2646,7 +2721,7 @@
                     if (this.isNeataptic && this.net) {
                         const normIn = padded.map(v => Math.max(0, Math.min(1, (v + 1) * 0.5)));
                         const rawOut = this.net.activate(normIn);
-                        const outputs = rawOut.map(v => v * 2 - 1);
+                        const outputs = rawOut.map(v => Number.isFinite(v) ? (v * 2 - 1) : 0);
                         this.lastOutputs = outputs;
                         this.lastHidden = this.net.nodes.filter(n => n.type === 'hidden').map(n => n.activation * 2 - 1);
                         this.memoryState = this.memoryState * 0.85 + (outputs[2] || 0) * 0.15;
@@ -2702,8 +2777,134 @@
             }
 
             // =========================================================================
-            // SECTION 3: GENETICS, SPECIATION, FITNESS & ORGANISM SIMULATION
+            // SECTION 3: HUMAN COMMANDER TASKS, REVOLUTIONS & ORGANISM SIMULATION
             // =========================================================================
+            function issueTaskFromHuman(commander, taskName, radius = 480) {
+                if (!commander || !creatures.includes(commander)) return 0;
+                const taskToGoal = {
+                    'Harvest Fruit': 'Forage & Thrive',
+                    'Build Shelter': 'Build & Innovate',
+                    'Guard Colony': 'Guard Colony',
+                    'Tend Orchard': 'Tend Orchard',
+                    'Explore Archipelago': 'Explore Archipelago',
+                    'Join Revolution': 'Join Revolution'
+                };
+                const mappedGoal = taskToGoal[taskName] || taskName;
+                let assigned = 0;
+
+                const candidates = creatures
+                    .filter(c => c !== commander)
+                    .map(c => ({ c, d: Math.hypot(c.x - commander.x, c.y - commander.y) }))
+                    .filter(item => item.d <= radius)
+                    .sort((a, b) => a.d - b.d)
+                    .slice(0, 6);
+
+                for (const { c } of candidates) {
+                    c.assignedGoal = mappedGoal;
+                    c.commandedBy = commander.realName.split(' (')[0];
+                    c.commandedTask = taskName;
+                    c.commandTimer = 320;
+                    c.lastThought = `Task from ${c.commandedBy}: ${taskName}`;
+                    commandBeams.push({
+                        from: commander,
+                        to: c,
+                        label: taskName,
+                        color: taskName === 'Join Revolution' ? '#fb7185' : '#38bdf8',
+                        life: 95
+                    });
+                    assigned++;
+                }
+
+                if (assigned > 0) {
+                    tasksIssuedTotal += assigned;
+                    commander.tasksIssued = (commander.tasksIssued || 0) + assigned;
+                    commander.humanNeuralXP += 1.6 * assigned;
+                    collectiveKnowledgeXP += 1.2 * assigned;
+                    commander.brain.reinforce(0.8);
+                    commander.lastThought = `Commanded ${assigned} peers: ${taskName}`;
+                    addChronicleEntry(`${commander.realName.split(' (')[0]} tasked ${assigned} agents: "${taskName}"`, 'text-cyan-300');
+                    showToast(`${commander.realName.split(' (')[0]} assigned "${taskName}" to ${assigned} agents`);
+                    audioEngine.playChime(698.46, 0.16);
+                }
+                return assigned;
+            }
+
+            function triggerHumanRevolution(leader = null) {
+                const humans = creatures.filter(c => c.isHuman);
+                const revLeader = leader && creatures.includes(leader)
+                    ? leader
+                    : (humans.find(h => h.isCognitiveLeader) || humans[0] || creatures[0]);
+                if (!revLeader) return;
+
+                revolutionCount++;
+                currentRegimeIndex = (currentRegimeIndex + 1) % COLONY_REGIMES.length;
+                const newRegime = COLONY_REGIMES[currentRegimeIndex];
+
+                revLeader.faction = 'REBEL';
+                revLeader.isCognitiveLeader = true;
+                revLeader.revolutionsLed = (revLeader.revolutionsLed || 0) + 1;
+                revLeader.assignedGoal = 'Build & Innovate';
+                revLeader.lastThought = `REVOLUTION! Rallying ${newRegime}!`;
+                if (revLeader.isHuman) {
+                    revLeader.humanNeuralXP += 14;
+                    revLeader.brain.reinforce(1.0);
+                }
+
+                revolutionWaves.push({
+                    x: revLeader.x,
+                    y: revLeader.y,
+                    radius: 25,
+                    maxRadius: 540,
+                    alpha: 1.0,
+                    label: `REVOLUTION #${revolutionCount}: ${newRegime}`
+                });
+                emitOceanRipple(revLeader.x, revLeader.y, 1.45);
+
+                let rallied = 0;
+                for (const c of creatures) {
+                    const d = Math.hypot(c.x - revLeader.x, c.y - revLeader.y);
+                    if (d < 620) {
+                        c.faction = 'REBEL';
+                        c.stress = Math.max(0.05, c.stress * 0.45);
+                        c.energy = Math.min(c.maxEnergy, c.energy + 36);
+                        c.assignedGoal = c.isHuman ? 'Build & Innovate' : 'Guard Colony';
+                        c.commandedBy = revLeader.realName.split(' (')[0];
+                        c.commandedTask = 'Join Revolution';
+                        c.commandTimer = 360;
+                        commandBeams.push({ from: revLeader, to: c, label: 'REVOLUTION!', color: '#fb7185', life: 110 });
+                        rallied++;
+                    }
+                }
+
+                for (const st of builtStructures) {
+                    if (Math.hypot(st.x - revLeader.x, st.y - revLeader.y) < 550) {
+                        st.isRebelStronghold = true;
+                    }
+                }
+                if (getTerrainSphereAt(revLeader.x, revLeader.y) === 'LITHOSPHERE' && builtStructures.length < 52) {
+                    builtStructures.push({
+                        x: revLeader.x + 26,
+                        y: revLeader.y + 18,
+                        stage: culturalStageIndex,
+                        kind: 'beacon',
+                        shelterName: 'Revolutionary Spire',
+                        builderName: revLeader.realName,
+                        label: `Charter #${revolutionCount}`,
+                        isRebelStronghold: true
+                    });
+                    rebuildTerracedWorld();
+                }
+
+                collectiveKnowledgeXP += 18;
+                recordEventMarker(`Rev #${revolutionCount}: ${newRegime}`, '#fb7185');
+                addChronicleEntry(`REVOLUTION #${revolutionCount}! ${revLeader.realName.split(' (')[0]} rallied ${rallied} agents into ${newRegime}!`, 'text-rose-300');
+                addEvolutionMilestone(`Rev #${revolutionCount}: ${newRegime}`);
+                showToast(`REVOLUTION #${revolutionCount}! ${rallied} rallied -> ${newRegime}`);
+                audioEngine.playPulse(145, 0.45);
+                updateHUD();
+                updateInspectorHUD();
+            }
+
             function generateUniqueGenome(speciesKey, parentGenome = null, speciateBurst = false) {
                 const cfg = SPECIES_CONFIG[speciesKey] || SPECIES_CONFIG.capybara;
                 const mut = Math.min(0.95, params.mutationRate * EARTH_ERAS[currentEraIndex].mutationBoost * (speciateBurst ? 1.85 : 1.0));
@@ -2753,7 +2954,15 @@
                     this.isHuman = this.species === 'human';
                     this.humanAnnStage = parentBrain && this.isHuman ? (parentBrain.humanStage || 0) : 0;
                     this.humanNeuralXP = this.isHuman ? HUMAN_ANN_STAGES[this.humanAnnStage].minXP : 0;
-                    this.isCognitiveLeader = forceCognitive !== null ? forceCognitive : (this.isHuman ? this.humanAnnStage >= 2 : totalSpawnCounter % 10 === 0);
+                    this.isCognitiveLeader = forceCognitive !== null ? forceCognitive : (this.isHuman ? this.humanAnnStage >= 1 : totalSpawnCounter % 10 === 0);
+                    this.faction = 'COLONY';
+                    this.commandedBy = null;
+                    this.commandedTask = null;
+                    this.commandTimer = 0;
+                    this.tasksIssued = 0;
+                    this.revolutionsLed = 0;
+                    this.commandCooldown = 60 + Math.floor(Math.random() * 80);
+
                     const givenName = INDIVIDUAL_NAMES[nameCursor % INDIVIDUAL_NAMES.length];
                     nameCursor++;
                     this.realName = `${givenName} (${SPECIES_CONFIG[this.species].name})`;
@@ -2803,7 +3012,7 @@
                 computeFitness() {
                     const survivalScore = Math.min(60, this.ageTicks * 0.045);
                     const resourceScore = (this.energy / this.maxEnergy) * 28 + (this.hydration / 100) * 14;
-                    const reproScore = this.offspring * 18 + this.successfulEscapes * 9;
+                    const reproScore = this.offspring * 18 + this.successfulEscapes * 9 + this.tasksIssued * 2;
                     const stressPenalty = this.stress * 12;
                     this.fitness = Math.max(1, Number((survivalScore + resourceScore + reproScore - stressPenalty).toFixed(1)));
                     return this.fitness;
@@ -2818,6 +3027,15 @@
 
                 update() {
                     this.ageTicks++;
+                    if (this.commandTimer > 0) {
+                        this.commandTimer--;
+                        if (this.commandTimer <= 0) {
+                            this.commandedBy = null;
+                            this.commandedTask = null;
+                        }
+                    }
+                    if (this.commandCooldown > 0) this.commandCooldown--;
+
                     if (this.growthProgress < 1.0) this.growthProgress = Math.min(1.0, this.growthProgress + 0.00055);
                     this.lifeStage = this.computeLifeStage();
                     this.mindGrowth = Math.min(3.5, (this.isCognitiveLeader ? 1.25 : 0.8) + this.growthProgress * 0.65 + culturalStageIndex * 0.28 + this.inventions.length * 0.14);
@@ -2896,6 +3114,19 @@
                         }
                     }
 
+                    // Autonomous Human Commander Task-Giving & Revolution Trigger via ANN
+                    if (this.isHuman && this.commandCooldown <= 0 && nearbyAllies >= 1) {
+                        this.commandCooldown = 190 + Math.floor(Math.random() * 140);
+                        const annSignal = (this.brain.lastOutputs[2] || 0);
+                        if (this.stress > 0.58 || (annSignal > 0.68 && Math.random() < 0.14)) {
+                            triggerHumanRevolution(this);
+                        } else {
+                            const autoTasks = ['Harvest Fruit', 'Build Shelter', 'Tend Orchard', 'Guard Colony'];
+                            const pickTask = autoTasks[Math.floor((Math.abs(annSignal) * 4 + this.ageTicks) % autoTasks.length)];
+                            issueTaskFromHuman(this, pickTask, 320);
+                        }
+                    }
+
                     if (bestMentor && this.ageTicks % 22 === 0 && (this.isHuman || this.isCognitiveLeader || Math.random() < 0.35)) {
                         this.brain.absorbMemeticCulture(bestMentor.brain, this.isHuman ? 0.22 : 0.12);
                         if (this.isHuman && bestMentor.inventions.length > 0 && !this.inventions.includes(bestMentor.inventions[0])) {
@@ -2904,7 +3135,7 @@
                         }
                     }
 
-                    if ((this.species === "earthworm" || this.species === "woodlouse" || this.species === "honeybee" || this.species === "hummingbird" || nearGranary) && this.ageTicks % 25 === 0) {
+                    if ((this.species === "earthworm" || this.species === "woodlouse" || this.species === "honeybee" || this.species === "hummingbird" || nearGranary || this.assignedGoal === 'Tend Orchard') && this.ageTicks % 25 === 0) {
                         soilFertility = Math.min(1.6, soilFertility + (nearGranary ? 0.009 : 0.0045));
                     }
                     if (nearBeacon && this.isHuman && this.ageTicks % 15 === 0) {
@@ -2944,6 +3175,10 @@
                         this.stateLabel = "HERD SPRINT EVADE";
                         this.thoughtIcon = "ALERT";
                         this.lastThought = `Alarm! Sprinting with ${nearbyAllies} herd mates`;
+                    } else if (this.commandedTask && this.commandTimer > 0) {
+                        this.stateLabel = `TASK: ${this.commandedTask.toUpperCase()}`;
+                        this.thoughtIcon = "BUILD";
+                        this.lastThought = `Executing "${this.commandedTask}" for ${this.commandedBy}`;
                     } else if (isPredator && nearestPrey) {
                         if (nearestPreyDist < vision * 0.65 && this.energy > 55 && this.sprintBurst <= 0) this.sprintBurst = 20;
                         this.stateLabel = "FLANKING HUNT";
@@ -2976,10 +3211,10 @@
                             const spec = SHELTER_TYPES[builtStructures.length % SHELTER_TYPES.length];
                             this.inventions.push(inv);
                             this.buildCooldown = 260;
-                            builtStructures.push({ x: this.x, y: this.y, stage: culturalStageIndex, kind: spec.kind, shelterName: spec.label, builderName: this.realName, label: inv });
+                            builtStructures.push({ x: this.x, y: this.y, stage: culturalStageIndex, kind: spec.kind, shelterName: spec.label, builderName: this.realName, label: inv, isRebelStronghold: this.faction === 'REBEL' });
                             this.lastThought = `Built ${spec.label} (${inv})!`;
                             rebuildTerracedWorld();
-                            addChronicleEntry(`${this.realName} built a ${spec.label} (${inv})`, 'text-amber-300');
+                            addChronicleEntry(`${this.realName} built a voxel ${spec.label} (${inv})`, 'text-amber-300');
                             showToast(`${this.realName} built a ${spec.label} (${inv})`);
                             audioEngine.playChime(659.25, 0.22);
                         } else {
@@ -3010,7 +3245,7 @@
                         if (nextHStage > this.humanAnnStage) {
                             this.humanAnnStage = nextHStage;
                             this.brain.evolveTopology(nextHStage);
-                            if (nextHStage >= 2) this.isCognitiveLeader = true;
+                            if (nextHStage >= 1) this.isCognitiveLeader = true;
                             const st = HUMAN_ANN_STAGES[nextHStage];
                             recordEventMarker(`Human ${st.name.split(':')[0]}`, '#fde047');
                             addChronicleEntry(`${this.realName} evolved ANN to ${st.name} (${st.inSize}->${st.hidSize}->${st.outSize})`, 'text-amber-300');
@@ -3227,6 +3462,7 @@
                             { id: this.genome.id, name: this.realName, resilience: this.resilience },
                             speciateBurst
                         );
+                        child.faction = this.faction;
                         creatures.push(child);
                         if (speciateBurst) {
                             recordEventMarker(`Speciation ${child.genome.id}`, '#c084fc');
@@ -3304,8 +3540,109 @@
             }
 
             // =========================================================================
-            // SECTION 5: FPV CAMERA, CUSTOM GLSL OCEAN SHADER & 3D WORLD
+            // SECTION 5: MINECRAFT PIXEL TEXTURES, GLSL SHADERS, FPV & 3D WORLD
             // =========================================================================
+            let minecraftTextures = null;
+            function getMinecraftTextures() {
+                if (minecraftTextures) return minecraftTextures;
+                const hsh = (x, y, k = 0) => {
+                    const v = Math.sin(x * 12.9898 + y * 78.233 + k * 37.719) * 43758.5453;
+                    return v - Math.floor(v);
+                };
+                const edgeBevel = (g, s) => {
+                    g.fillStyle = 'rgba(255,255,255,0.09)';
+                    g.fillRect(0, 0, s, 1); g.fillRect(0, 0, 1, s);
+                    g.fillStyle = 'rgba(0,0,0,0.18)';
+                    g.fillRect(0, s - 1, s, 1); g.fillRect(s - 1, 0, 1, s);
+                };
+                const makePixelTex = (drawFn, size = 16) => {
+                    const cv = document.createElement('canvas');
+                    cv.width = size; cv.height = size;
+                    const g = cv.getContext('2d');
+                    drawFn(g, size);
+                    const tex = new THREE.CanvasTexture(cv);
+                    tex.magFilter = THREE.NearestFilter;
+                    tex.minFilter = THREE.NearestFilter;
+                    tex.wrapS = THREE.RepeatWrapping;
+                    tex.wrapT = THREE.RepeatWrapping;
+                    return tex;
+                };
+
+                const grassTop = makePixelTex((g, s) => {
+                    const cols = ['#73a839', '#61932e', '#84bd44', '#568527'];
+                    for (let y = 0; y < s; y++) for (let x = 0; x < s; x++) {
+                        g.fillStyle = cols[Math.floor(hsh(x, y, 1) * cols.length)];
+                        g.fillRect(x, y, 1, 1);
+                    }
+                    for (let f = 0; f < 6; f++) {
+                        g.fillStyle = f % 2 ? '#a2d660' : '#46701f';
+                        g.fillRect(Math.floor(hsh(f, 9) * s), Math.floor(hsh(f, 11) * s), 1, 1);
+                    }
+                    edgeBevel(g, s);
+                });
+
+                const grassSide = makePixelTex((g, s) => {
+                    const dirt = ['#7d4e2d', '#6b4022', '#8f5d38', '#5c341a'];
+                    const grass = ['#73a839', '#61932e', '#84bd44'];
+                    for (let y = 0; y < s; y++) for (let x = 0; x < s; x++) {
+                        const edge = 3 + ((x * 5) % 3);
+                        g.fillStyle = y < edge ? grass[Math.floor(hsh(x, y, 5) * grass.length)] : dirt[Math.floor(hsh(x, y, 6) * dirt.length)];
+                        g.fillRect(x, y, 1, 1);
+                        if (y >= edge && y < edge + 2) { g.fillStyle = 'rgba(0,0,0,0.22)'; g.fillRect(x, y, 1, 1); }
+                    }
+                    edgeBevel(g, s);
+                });
+
+                const sandTex = makePixelTex((g, s) => {
+                    const cols = ['#eddba9', '#e2cc94', '#f4e6bb', '#d6bf85'];
+                    for (let y = 0; y < s; y++) for (let x = 0; x < s; x++) {
+                        g.fillStyle = cols[Math.floor(hsh(x, y, 2) * cols.length)];
+                        g.fillRect(x, y, 1, 1);
+                    }
+                    edgeBevel(g, s);
+                });
+
+                const stoneTex = makePixelTex((g, s) => {
+                    const cols = ['#7f858d', '#6d737b', '#8d949c', '#5e646c'];
+                    for (let y = 0; y < s; y++) for (let x = 0; x < s; x++) {
+                        g.fillStyle = cols[Math.floor(hsh(x, y, 7) * cols.length)];
+                        g.fillRect(x, y, 1, 1);
+                    }
+                    edgeBevel(g, s);
+                });
+
+                const barkTex = makePixelTex((g, s) => {
+                    const cols = ['#5c3d24', '#4b301b', '#6b492d', '#3e2715'];
+                    for (let y = 0; y < s; y++) for (let x = 0; x < s; x++) {
+                        g.fillStyle = cols[(x * 3 + (y >> 1)) % cols.length];
+                        g.fillRect(x, y, 1, 1);
+                    }
+                    edgeBevel(g, s);
+                });
+
+                const leafTex = makePixelTex((g, s) => {
+                    const cols = ['#3f7d2c', '#2f6320', '#4f9138', '#254f19'];
+                    for (let y = 0; y < s; y++) for (let x = 0; x < s; x++) {
+                        g.fillStyle = cols[Math.floor(hsh(x, y, 3) * cols.length)];
+                        g.fillRect(x, y, 1, 1);
+                    }
+                    edgeBevel(g, s);
+                });
+
+                const planksTex = makePixelTex((g, s) => {
+                    const cols = ['#b8844c', '#a6743f', '#c7935a', '#946534'];
+                    for (let y = 0; y < s; y++) for (let x = 0; x < s; x++) {
+                        const seam = y % 4 === 0 || (x === ((y >> 2) * 5) % s);
+                        g.fillStyle = seam ? '#6b4420' : cols[Math.floor(hsh(x, y >> 2, 8) * cols.length)];
+                        g.fillRect(x, y, 1, 1);
+                    }
+                    edgeBevel(g, s);
+                });
+
+                minecraftTextures = { grassTop, grassSide, sandTex, stoneTex, barkTex, leafTex, planksTex };
+                return minecraftTextures;
+            }
+
             function syncFpvHudVisibility() {
                 const stack = document.getElementById('fpvHudStack');
                 const banner = document.getElementById('fpvBanner');
@@ -3324,15 +3661,10 @@
                 fpvCam.rollAngle = 0;
                 fpvCam.recenterTimer = 0;
                 fpvCam.transitionMix = 0;
-                if (threeState.perspCamera) {
-                    threeState.perspCamera.up.set(0, 1, 0);
-                }
+                if (threeState.perspCamera) threeState.perspCamera.up.set(0, 1, 0);
                 const fpvBtn = document.getElementById('btnFpvBot');
                 const fpvText = document.getElementById('textFpvBot');
-                if (fpvBtn) {
-                    fpvBtn.classList.remove('insp-on');
-                    fpvBtn.setAttribute('aria-pressed', 'false');
-                }
+                if (fpvBtn) { fpvBtn.classList.remove('insp-on'); fpvBtn.setAttribute('aria-pressed', 'false'); }
                 if (fpvText) fpvText.textContent = 'FPV: OFF';
                 syncFpvHudVisibility();
                 if (!silent) showToast('Exited First-Person View');
@@ -3362,10 +3694,7 @@
                 document.getElementById('inspectorCard').classList.remove('hidden');
                 const fpvBtn = document.getElementById('btnFpvBot');
                 const fpvText = document.getElementById('textFpvBot');
-                if (fpvBtn) {
-                    fpvBtn.classList.add('insp-on');
-                    fpvBtn.setAttribute('aria-pressed', 'true');
-                }
+                if (fpvBtn) { fpvBtn.classList.add('insp-on'); fpvBtn.setAttribute('aria-pressed', 'true'); }
                 if (fpvText) fpvText.textContent = 'FPV: ON';
                 syncFpvHudVisibility();
                 updateInspectorHUD();
@@ -3376,9 +3705,7 @@
             function cycleFpvSubject(step) {
                 if (!creatures.length) return;
                 const currentIdx = selectedCreature ? creatures.indexOf(selectedCreature) : -1;
-                const nextIdx = currentIdx >= 0
-                    ? (currentIdx + step + creatures.length) % creatures.length
-                    : 0;
+                const nextIdx = currentIdx >= 0 ? (currentIdx + step + creatures.length) % creatures.length : 0;
                 enterFpvForCreature(creatures[nextIdx]);
             }
 
@@ -3401,9 +3728,8 @@
                 fpvCam.pitchOffset = Math.max(-0.55, Math.min(0.62, fpvCam.pitchOffset));
 
                 if (!fpvCam.isDraggingLook && !keyboardMovedLook) {
-                    if (fpvCam.recenterTimer > 0) {
-                        fpvCam.recenterTimer--;
-                    } else {
+                    if (fpvCam.recenterTimer > 0) fpvCam.recenterTimer--;
+                    else {
                         fpvCam.yawOffset *= 0.965;
                         fpvCam.pitchOffset *= 0.955;
                         if (Math.abs(fpvCam.yawOffset) < 0.002) fpvCam.yawOffset = 0;
@@ -3426,9 +3752,9 @@
 
                 if (creature.isHuman) {
                     const hScale = 0.82 + (creature.humanAnnStage || 0) * 0.08;
-                    baseEyeHeight = gy + s * hScale * 2.48;
-                    bobOffsetY = Math.abs(Math.sin(fpvCam.bobPhase)) * 2.1;
-                    bobSideOffset = Math.sin(fpvCam.bobPhase * 0.5) * 1.25;
+                    baseEyeHeight = Math.max(gy + 22, gy + s * hScale * 2.65);
+                    bobOffsetY = Math.abs(Math.sin(fpvCam.bobPhase)) * 1.4;
+                    bobSideOffset = Math.sin(fpvCam.bobPhase * 0.5) * 0.7;
                 } else if (sphere === 'ATMOSPHERE') {
                     const hoverOsc = Math.sin(creature.walkPhase * 0.6) * 4.0;
                     baseEyeHeight = gy + 39.5 + hoverOsc;
@@ -3461,13 +3787,9 @@
 
                 const lookDist = 210;
                 const pitchLift = Math.tan(fpvCam.pitchOffset) * lookDist - 10;
-                const desiredLookX = fpvCam.pos.x + cosV * lookDist;
-                const desiredLookY = fpvCam.pos.y + pitchLift;
-                const desiredLookZ = fpvCam.pos.z + sinV * lookDist;
-
-                fpvCam.lookAt.x += (desiredLookX - fpvCam.lookAt.x) * 0.34;
-                fpvCam.lookAt.y += (desiredLookY - fpvCam.lookAt.y) * 0.34;
-                fpvCam.lookAt.z += (desiredLookZ - fpvCam.lookAt.z) * 0.34;
+                fpvCam.lookAt.x += (fpvCam.pos.x + cosV * lookDist - fpvCam.lookAt.x) * 0.34;
+                fpvCam.lookAt.y += (fpvCam.pos.y + pitchLift - fpvCam.lookAt.y) * 0.34;
+                fpvCam.lookAt.z += (fpvCam.pos.z + sinV * lookDist - fpvCam.lookAt.z) * 0.34;
 
                 const forwardVec = new THREE.Vector3().subVectors(fpvCam.lookAt, fpvCam.pos).normalize();
                 const worldUp = new THREE.Vector3(0, 1, 0);
@@ -3538,9 +3860,7 @@
                 for (let j = 0; j < springs.length; j++) {
                     const sp = springs[j];
                     const sd = Math.hypot(wx - sp.x, wz - sp.y);
-                    if (sd < sp.radius * 2.2) {
-                        maxShoal = Math.max(maxShoal, (1 - sd / (sp.radius * 2.2)) * 0.78);
-                    }
+                    if (sd < sp.radius * 2.2) maxShoal = Math.max(maxShoal, (1 - sd / (sp.radius * 2.2)) * 0.78);
                 }
                 return Math.max(0, Math.min(1, maxShoal));
             }
@@ -3664,7 +3984,6 @@
                         }
 
                         vec3 n = normalize(vec3((r1 + r2) * 0.16 + ringSlopeX, 1.0, (r1 - r2) * 0.16 + ringSlopeZ));
-
                         vec3 viewDir = normalize(cameraPosition - vWorldPos);
                         float fresnel = pow(1.0 - max(dot(viewDir, n), 0.0), 3.0);
 
@@ -3811,21 +4130,15 @@
                             #include <color_fragment>
                             ${isTerrain ? /* glsl */ `
                                 float heightAboveWater = vDlWorldPos.y - uWaterLevel;
-                                float slopeFactor = 1.0 - clamp(abs(vDlWorldNormal.y), 0.0, 1.0);
-                                float strataBand = 0.5 + 0.5 * sin(vDlWorldPos.y * 0.24 + dlNoise(vDlWorldPos.xz * 0.012) * 3.0);
-                                vec3 strataMineral = mix(vec3(0.36, 0.26, 0.22), vec3(0.58, 0.46, 0.34), strataBand);
-                                diffuseColor.rgb = mix(diffuseColor.rgb, strataMineral, clamp(slopeFactor * 0.65 + smoothstep(26.0, 56.0, heightAboveWater) * 0.22, 0.0, 0.72));
-
-                                float fertTint = clamp((uSoilFertility - 1.0) * 0.35, -0.18, 0.22);
-                                diffuseColor.rgb *= (1.0 + fertTint * vec3(-0.1, 0.22, -0.08));
-
+                                float fertTint = clamp((uSoilFertility - 1.0) * 0.25, -0.14, 0.18);
+                                diffuseColor.rgb *= (1.0 + fertTint * vec3(-0.08, 0.18, -0.06));
                                 float wetBand = 1.0 - smoothstep(0.0, 7.5, abs(heightAboveWater));
-                                diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * 0.56, wetBand * 0.85);
+                                diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * 0.58, wetBand * 0.85);
                             ` : ''}
                             float cUv1 = dlNoise(vDlWorldPos.xz * 0.0024 + vec2(uTime * 0.045, uTime * 0.025));
                             float cUv2 = dlNoise(vDlWorldPos.xz * 0.0052 - vec2(uTime * 0.03, -uTime * 0.05));
                             float cloudPattern = smoothstep(0.46, 0.82, cUv1 * 0.65 + cUv2 * 0.35);
-                            float cloudShadow = cloudPattern * uCloudOpacity * (${isFoliage ? '0.42' : '0.55'});
+                            float cloudShadow = cloudPattern * uCloudOpacity * (${isFoliage ? '0.38' : '0.48'});
                             diffuseColor.rgb *= (1.0 - cloudShadow);
                             diffuseColor.rgb += vec3(0.72, 0.86, 1.0) * uLightningFlash * 0.26;
                             `
@@ -3841,7 +4154,7 @@
                             `
                         );
                 };
-                material.customProgramCacheKey = () => `dl_env_${isTerrain ? 't' : 'o'}_${isFoliage ? 'f' : 's'}_${swayAmp.toFixed(3)}`;
+                material.customProgramCacheKey = () => `dl_vox_${isTerrain ? 't' : 'o'}_${isFoliage ? 'f' : 's'}_${swayAmp.toFixed(3)}`;
                 return material;
             }
 
@@ -4242,46 +4555,34 @@
                 threeState.beaconSpire = null;
 
                 const era = EARTH_ERAS[currentEraIndex];
-                const seed = worldSeed * 0.013;
+                const tex = getMinecraftTextures();
+
+                // Build Minecraft-style Terraced Voxel Blocks across all 7 Islands
+                const blockPositions = [];
+                const treePositions = [];
+                const rockPositions = [];
 
                 for (let idx = 0; idx < ISLAND_ARCHIPELAGO.length; idx++) {
                     const isl = ISLAND_ARCHIPELAGO[idx];
-                    const r = isl.radius;
-                    const geo = new THREE.CylinderGeometry(r * 0.94, r * 1.14, 76, 52, 5, false);
-                    const pos = geo.attributes.position;
-                    for (let i = 0; i < pos.count; i++) {
-                        let vx = pos.getX(i);
-                        let vy = pos.getY(i);
-                        let vz = pos.getZ(i);
-                        const ang = Math.atan2(vz, vx);
-                        const rad = Math.hypot(vx, vz);
-                        const coastWave = 1 + 0.14 * Math.sin(ang * 5 + seed + idx) + 0.08 * Math.cos(ang * 9 - seed * 1.4);
-                        vx *= coastWave;
-                        vz *= coastWave;
-                        if (vy > 0) {
-                            const normR = Math.min(1, rad / (r * 0.94));
-                            const ridge = Math.sin(normR * Math.PI) * 20 + Math.cos(vx * 0.008 + vz * 0.007 + idx) * 6;
-                            vy += Math.max(0, ridge);
+                    const rBound = Math.ceil(isl.radius / TILE_STEP) * TILE_STEP;
+                    for (let x = isl.x - rBound; x <= isl.x + rBound; x += TILE_STEP) {
+                        for (let z = isl.y - rBound; z <= isl.y + rBound; z += TILE_STEP) {
+                            const d = Math.hypot(x - isl.x, z - isl.y);
+                            if (d > isl.radius * 1.04) continue;
+                            const elev = getWorldElevation(x, z);
+                            const step = getTerraceStep(elev);
+                            if (step < 0) continue;
+                            const topY = terraceHeightY(elev);
+                            const hash = Math.abs(Math.sin(x * 12.9898 + z * 78.233 + worldSeed) * 43758.5453) % 1;
+                            blockPositions.push({ x, z, topY, step, hash, island: isl });
+                            if (step >= 1) {
+                                if (hash > 0.875) treePositions.push({ x, z, y: topY, scale: 0.92 + (hash - 0.875) * 2.2 });
+                                else if (hash > 0.84) rockPositions.push({ x, z, y: topY, scale: 0.8 + hash * 0.45 });
+                            }
                         }
-                        pos.setXYZ(i, vx, vy, vz);
                     }
-                    geo.computeVertexNormals();
 
-                    const islandMat = injectTerrainAndFoliageShaders(
-                        new THREE.MeshStandardMaterial({
-                            color: isl.topTint,
-                            roughness: 0.72,
-                            metalness: 0.06
-                        }),
-                        { isTerrain: true }
-                    );
-                    const islandMesh = new THREE.Mesh(geo, islandMat);
-                    islandMesh.position.set(isl.x, -34, isl.y);
-                    islandMesh.receiveShadow = true;
-                    islandMesh.castShadow = true;
-                    threeState.worldGroup.add(islandMesh);
-
-                    const rimGeo = new THREE.RingGeometry(r * 0.93, r * 1.03, 48);
+                    const rimGeo = new THREE.RingGeometry(isl.radius * 0.94, isl.radius * 1.04, 48);
                     rimGeo.rotateX(-Math.PI / 2);
                     const rimMat = new THREE.MeshBasicMaterial({
                         color: isl.color,
@@ -4310,95 +4611,104 @@
                     threeState.worldGroup.add(pondMesh);
                 }
 
-                const trunkGeo = new THREE.CylinderGeometry(3.2, 5.4, 24, 7);
-                trunkGeo.translate(0, 12, 0);
-                const trunkMat = injectTerrainAndFoliageShaders(
-                    new THREE.MeshStandardMaterial({ color: '#5c3a21', roughness: 0.88 }),
-                    { isFoliage: true, swayAmp: 0.35 }
-                );
-                const canopyGeo = new THREE.DodecahedronGeometry(16.5, 1);
-                const canopyMat = injectTerrainAndFoliageShaders(
-                    new THREE.MeshStandardMaterial({ color: '#22c55e', roughness: 0.62, metalness: 0.04 }),
-                    { isFoliage: true, swayAmp: 1.45 }
-                );
+                if (blockPositions.length > 0) {
+                    const sideMat = injectTerrainAndFoliageShaders(
+                        new THREE.MeshStandardMaterial({ map: tex.grassSide, roughness: 0.9, metalness: 0.02 }),
+                        { isTerrain: true }
+                    );
+                    const topMat = injectTerrainAndFoliageShaders(
+                        new THREE.MeshStandardMaterial({ map: tex.grassTop, roughness: 0.85, metalness: 0.02 }),
+                        { isTerrain: true }
+                    );
+                    const colGeo = new THREE.BoxGeometry(TILE_STEP * 1.01, 74, TILE_STEP * 1.01);
+                    const colInst = new THREE.InstancedMesh(
+                        colGeo,
+                        [sideMat, sideMat, topMat, sideMat, sideMat, sideMat],
+                        blockPositions.length
+                    );
+                    colInst.receiveShadow = true;
+                    colInst.castShadow = true;
 
-                const treeCoords = [];
-                for (let idx = 0; idx < ISLAND_ARCHIPELAGO.length; idx++) {
-                    const isl = ISLAND_ARCHIPELAGO[idx];
-                    const count = idx === 6 ? 18 : 12;
-                    for (let t = 0; t < count; t++) {
-                        const ang = t * 2.39996 + idx * 1.1;
-                        const dist = 165 + ((t * 97 + idx * 53) % Math.max(220, Math.floor(isl.radius * 0.68)));
-                        const tx = isl.x + Math.cos(ang) * dist;
-                        const ty = isl.y + Math.sin(ang) * dist;
-                        if (Math.hypot(tx - (isl.x + 70), ty - (isl.y + 140)) < 185) continue;
-                        if (getWorldElevation(tx, ty) > 0.08) {
-                            treeCoords.push({ x: tx, y: ty, scale: 0.78 + (t % 5) * 0.14, idx });
-                        }
-                    }
+                    const dummy = new THREE.Object3D();
+                    const color = new THREE.Color();
+                    blockPositions.forEach((b, i) => {
+                        dummy.position.set(b.x, b.topY - 37, b.z);
+                        dummy.rotation.set(0, 0, 0);
+                        dummy.scale.set(1, 1, 1);
+                        dummy.updateMatrix();
+                        colInst.setMatrixAt(i, dummy.matrix);
+                        if (b.step === 0) color.set('#f2dfa4').offsetHSL(0, 0, (b.hash - 0.5) * 0.04);
+                        else if (b.step === 1) color.set('#b7d968').lerp(new THREE.Color(b.island.topTint), 0.3);
+                        else if (b.step === 2) color.set('#9ec456').lerp(new THREE.Color(b.island.midTint), 0.32);
+                        else color.set('#d6c7a9').lerp(new THREE.Color(b.island.topTint), 0.25);
+                        colInst.setColorAt(i, color);
+                    });
+                    colInst.instanceMatrix.needsUpdate = true;
+                    if (colInst.instanceColor) colInst.instanceColor.needsUpdate = true;
+                    threeState.worldGroup.add(colInst);
                 }
 
-                if (treeCoords.length > 0) {
-                    const trunkInst = new THREE.InstancedMesh(trunkGeo, trunkMat, treeCoords.length);
-                    const canopyInst = new THREE.InstancedMesh(canopyGeo, canopyMat, treeCoords.length);
-                    trunkInst.castShadow = true;
-                    trunkInst.receiveShadow = true;
-                    canopyInst.castShadow = true;
-                    canopyInst.receiveShadow = true;
+                // Minecraft Voxel Trees (Bark Trunk + Blocky Leaf Canopy + Hanging Apples)
+                if (treePositions.length > 0) {
+                    const trunkMat = injectTerrainAndFoliageShaders(
+                        new THREE.MeshStandardMaterial({ map: tex.barkTex, roughness: 0.92 }),
+                        { isFoliage: true, swayAmp: 0.25 }
+                    );
+                    const leafMat = injectTerrainAndFoliageShaders(
+                        new THREE.MeshStandardMaterial({ map: tex.leafTex, roughness: 0.82 }),
+                        { isFoliage: true, swayAmp: 1.35 }
+                    );
+                    const trunkInst = new THREE.InstancedMesh(new THREE.BoxGeometry(10, 26, 10), trunkMat, treePositions.length);
+                    const crownInst = new THREE.InstancedMesh(new THREE.BoxGeometry(30, 22, 30), leafMat, treePositions.length);
+                    const crownTopInst = new THREE.InstancedMesh(new THREE.BoxGeometry(18, 13, 18), leafMat, treePositions.length);
+                    trunkInst.castShadow = true; trunkInst.receiveShadow = true;
+                    crownInst.castShadow = true; crownInst.receiveShadow = true;
+                    crownTopInst.castShadow = true; crownTopInst.receiveShadow = true;
+
                     const dummy = new THREE.Object3D();
-                    const cColor = new THREE.Color();
-                    treeCoords.forEach((tc, i) => {
-                        const gy = terraceHeightY(getWorldElevation(tc.x, tc.y));
-                        dummy.position.set(tc.x, gy, tc.y);
-                        dummy.rotation.set(0, i * 0.7, 0);
-                        dummy.scale.setScalar(tc.scale);
+                    const leafTint = new THREE.Color();
+                    treePositions.forEach((t, i) => {
+                        const fr = (t.scale * 7.31) % 1;
+                        leafTint.setHSL(0.24 + fr * 0.09, 0.62, 0.78 + fr * 0.16);
+                        dummy.rotation.set(0, 0, 0);
+                        dummy.position.set(t.x, t.y + 13 * t.scale, t.z);
+                        dummy.scale.setScalar(t.scale);
                         dummy.updateMatrix();
                         trunkInst.setMatrixAt(i, dummy.matrix);
 
-                        dummy.position.set(tc.x, gy + 24 * tc.scale, tc.y);
-                        dummy.scale.set(tc.scale * 1.05, tc.scale * 0.85, tc.scale * 1.05);
+                        dummy.position.set(t.x, t.y + 28 * t.scale, t.z);
+                        dummy.scale.setScalar(t.scale);
                         dummy.updateMatrix();
-                        canopyInst.setMatrixAt(i, dummy.matrix);
+                        crownInst.setMatrixAt(i, dummy.matrix);
+                        crownInst.setColorAt(i, leafTint);
 
-                        const hueShift = ((i * 19 + tc.idx * 25) % 45) / 100 - 0.12;
-                        cColor.setHSL(0.33 + hueShift, 0.65, 0.36);
-                        canopyInst.setColorAt(i, cColor);
+                        dummy.position.set(t.x, t.y + 42 * t.scale, t.z);
+                        dummy.scale.setScalar(t.scale);
+                        dummy.updateMatrix();
+                        crownTopInst.setMatrixAt(i, dummy.matrix);
+                        crownTopInst.setColorAt(i, leafTint);
                     });
                     trunkInst.instanceMatrix.needsUpdate = true;
-                    canopyInst.instanceMatrix.needsUpdate = true;
-                    if (canopyInst.instanceColor) canopyInst.instanceColor.needsUpdate = true;
-                    threeState.worldGroup.add(trunkInst);
-                    threeState.worldGroup.add(canopyInst);
+                    crownInst.instanceMatrix.needsUpdate = true;
+                    crownTopInst.instanceMatrix.needsUpdate = true;
+                    if (crownInst.instanceColor) crownInst.instanceColor.needsUpdate = true;
+                    if (crownTopInst.instanceColor) crownTopInst.instanceColor.needsUpdate = true;
+                    threeState.worldGroup.add(trunkInst, crownInst, crownTopInst);
                 }
 
-                const rockGeo = new THREE.DodecahedronGeometry(12, 0);
-                const rockMat = injectTerrainAndFoliageShaders(
-                    new THREE.MeshStandardMaterial({ color: '#64748b', roughness: 0.82, metalness: 0.12 }),
-                    { isTerrain: true }
-                );
-                const rockCoords = [];
-                for (let idx = 0; idx < ISLAND_ARCHIPELAGO.length; idx++) {
-                    const isl = ISLAND_ARCHIPELAGO[idx];
-                    for (let r = 0; r < 6; r++) {
-                        const ang = r * 1.05 + idx * 0.8;
-                        const dist = isl.radius * (0.45 + (r % 3) * 0.18);
-                        const rx = isl.x + Math.cos(ang) * dist;
-                        const ry = isl.y + Math.sin(ang) * dist;
-                        if (getWorldElevation(rx, ry) > 0.06) {
-                            rockCoords.push({ x: rx, y: ry, s: 0.7 + (r % 4) * 0.35 });
-                        }
-                    }
-                }
-                if (rockCoords.length > 0) {
-                    const rockInst = new THREE.InstancedMesh(rockGeo, rockMat, rockCoords.length);
-                    rockInst.castShadow = true;
-                    rockInst.receiveShadow = true;
+                // Voxel Stone Boulders
+                if (rockPositions.length > 0) {
+                    const rockMat = injectTerrainAndFoliageShaders(
+                        new THREE.MeshStandardMaterial({ map: tex.stoneTex, roughness: 0.88, metalness: 0.08 }),
+                        { isTerrain: true }
+                    );
+                    const rockInst = new THREE.InstancedMesh(new THREE.BoxGeometry(16, 12, 16), rockMat, rockPositions.length);
+                    rockInst.castShadow = true; rockInst.receiveShadow = true;
                     const dummy = new THREE.Object3D();
-                    rockCoords.forEach((rc, i) => {
-                        const gy = terraceHeightY(getWorldElevation(rc.x, rc.y));
-                        dummy.position.set(rc.x, gy + 4 * rc.s, rc.y);
-                        dummy.rotation.set(i * 0.3, i * 0.8, i * 0.2);
-                        dummy.scale.set(rc.s * 1.2, rc.s * 0.78, rc.s);
+                    rockPositions.forEach((rc, i) => {
+                        dummy.position.set(rc.x, rc.y + 5 * rc.scale, rc.z);
+                        dummy.rotation.set(0, i * 0.45, 0);
+                        dummy.scale.set(rc.scale, rc.scale * 0.85, rc.scale);
                         dummy.updateMatrix();
                         rockInst.setMatrixAt(i, dummy.matrix);
                     });
@@ -4416,8 +4726,11 @@
                     threeState.worldGroup.add(sMesh);
                 }
 
-                const wallMat = new THREE.MeshStandardMaterial({ color: '#e2e8f0', roughness: 0.65 });
-                const roofMat = new THREE.MeshStandardMaterial({ color: '#f59e0b', roughness: 0.55 });
+                // Minecraft-Textured Human Houses, Towers, Granaries & Rebel Strongholds
+                const plankMat = new THREE.MeshStandardMaterial({ map: tex.planksTex, roughness: 0.78 });
+                const stoneWallMat = new THREE.MeshStandardMaterial({ map: tex.stoneTex, roughness: 0.85 });
+                const roofMat = new THREE.MeshStandardMaterial({ color: '#d97706', roughness: 0.6 });
+                const rebelRoofMat = new THREE.MeshStandardMaterial({ color: '#e11d48', emissive: '#9f1239', emissiveIntensity: 0.4, roughness: 0.5 });
                 const glowMat = new THREE.MeshStandardMaterial({ color: '#fde047', emissive: '#f59e0b', emissiveIntensity: 0.9 });
                 threeState.houseGlowMat = glowMat;
 
@@ -4426,44 +4739,47 @@
                     const hGroup = new THREE.Group();
                     hGroup.position.set(st.x, gy, st.y);
                     const kind = st.kind || 'camp';
+                    const activeRoof = st.isRebelStronghold ? rebelRoofMat : roofMat;
+
                     if (kind === 'tower') {
-                        const base = new THREE.Mesh(new THREE.CylinderGeometry(9, 12, 24, 8), wallMat);
-                        base.position.y = 12; base.castShadow = true; hGroup.add(base);
-                        const deck = new THREE.Mesh(new THREE.BoxGeometry(22, 3, 22), roofMat);
-                        deck.position.y = 24; deck.castShadow = true; hGroup.add(deck);
+                        const base = new THREE.Mesh(new THREE.BoxGeometry(16, 26, 16), stoneWallMat);
+                        base.position.y = 13; base.castShadow = true; hGroup.add(base);
+                        const deck = new THREE.Mesh(new THREE.BoxGeometry(22, 4, 22), plankMat);
+                        deck.position.y = 26; deck.castShadow = true; hGroup.add(deck);
                         const lantern = new THREE.Mesh(new THREE.BoxGeometry(6, 6, 6), glowMat);
-                        lantern.position.y = 28; hGroup.add(lantern);
+                        lantern.position.y = 31; hGroup.add(lantern);
                     } else if (kind === 'granary') {
-                        const silo = new THREE.Mesh(new THREE.CylinderGeometry(11, 11, 18, 12), new THREE.MeshStandardMaterial({ color: '#4ade80', roughness: 0.6 }));
+                        const silo = new THREE.Mesh(new THREE.BoxGeometry(20, 18, 20), plankMat);
                         silo.position.y = 9; silo.castShadow = true; hGroup.add(silo);
-                        const dome = new THREE.Mesh(new THREE.ConeGeometry(12.5, 8, 12), roofMat);
-                        dome.position.y = 22; dome.castShadow = true; hGroup.add(dome);
+                        const dome = new THREE.Mesh(new THREE.BoxGeometry(14, 7, 14), activeRoof);
+                        dome.position.y = 21.5; dome.castShadow = true; hGroup.add(dome);
                     } else if (kind === 'beacon') {
-                        const plinth = new THREE.Mesh(new THREE.CylinderGeometry(8, 11, 10, 6), wallMat);
+                        const plinth = new THREE.Mesh(new THREE.BoxGeometry(16, 10, 16), stoneWallMat);
                         plinth.position.y = 5; plinth.castShadow = true; hGroup.add(plinth);
-                        const spire = new THREE.Mesh(new THREE.OctahedronGeometry(7, 0), new THREE.MeshStandardMaterial({ color: '#c084fc', emissive: '#a855f7', emissiveIntensity: 1.1 }));
+                        const spireColor = st.isRebelStronghold ? '#fb7185' : '#c084fc';
+                        const spire = new THREE.Mesh(new THREE.OctahedronGeometry(7.5, 0), new THREE.MeshStandardMaterial({ color: spireColor, emissive: spireColor, emissiveIntensity: 1.15 }));
                         spire.position.y = 18; spire.castShadow = true; hGroup.add(spire);
                         threeState.beaconSpire = spire;
                     } else {
-                        const body = new THREE.Mesh(new THREE.BoxGeometry(16, 12, 14), wallMat);
-                        body.position.y = 6; body.castShadow = true; body.receiveShadow = true; hGroup.add(body);
-                        const roof = new THREE.Mesh(new THREE.ConeGeometry(13.5, 9, 4), roofMat);
-                        roof.position.y = 16.5; roof.rotation.y = Math.PI * 0.25; roof.castShadow = true; hGroup.add(roof);
-                        const win = new THREE.Mesh(new THREE.BoxGeometry(4, 4, 1.5), glowMat);
-                        win.position.set(0, 6.5, 7.2); hGroup.add(win);
+                        const body = new THREE.Mesh(new THREE.BoxGeometry(18, 14, 16), plankMat);
+                        body.position.y = 7; body.castShadow = true; body.receiveShadow = true; hGroup.add(body);
+                        const roof = new THREE.Mesh(new THREE.ConeGeometry(14.5, 10, 4), activeRoof);
+                        roof.position.y = 19; roof.rotation.y = Math.PI * 0.25; roof.castShadow = true; hGroup.add(roof);
+                        const win = new THREE.Mesh(new THREE.BoxGeometry(5, 5, 1.5), glowMat);
+                        win.position.set(0, 7.5, 8.2); hGroup.add(win);
                     }
                     threeState.worldGroup.add(hGroup);
                 }
 
                 const cloudGroup = new THREE.Group();
-                const cGeo = new THREE.DodecahedronGeometry(34, 1);
-                const cMat = new THREE.MeshStandardMaterial({ color: '#f8fafc', roughness: 0.9, transparent: true, opacity: 0.72 });
+                const cGeo = new THREE.BoxGeometry(72, 16, 48);
+                const cMat = new THREE.MeshStandardMaterial({ color: '#f8fafc', roughness: 0.95, transparent: true, opacity: 0.72 });
                 for (let c = 0; c < 14; c++) {
                     const cl = new THREE.Mesh(cGeo, cMat);
                     const ang = (c / 14) * Math.PI * 2;
                     const rad = 750 + (c % 4) * 780;
-                    cl.position.set(Math.cos(ang) * rad, 118 + (c % 3) * 14, Math.sin(ang) * rad);
-                    cl.scale.set(1.8, 0.42, 1.15);
+                    cl.position.set(Math.cos(ang) * rad, 128 + (c % 3) * 16, Math.sin(ang) * rad);
+                    cl.scale.set(1.5, 0.9, 1.15);
                     cloudGroup.add(cl);
                 }
                 cloudGroup.visible = showAtmosphereClouds;
@@ -4478,15 +4794,14 @@
 
             function buildDetailedCreatureMesh(c) {
                 const group = new THREE.Group();
-                const cfg = SPECIES_CONFIG[c.species] || SPECIES_CONFIG.capybara;
                 const s = c.genome.size * (0.62 + c.growthProgress * 0.42);
                 const bodyColor = c.isHuman ? '#f5c28b' : `hsl(${Math.round(c.genome.hue)}, 74%, 56%)`;
-                const accentColor = c.isHuman ? '#0ea5e9' : `hsl(${Math.round(c.genome.accentHue)}, 82%, 62%)`;
+                const accentColor = c.isHuman ? (c.faction === 'REBEL' ? '#e11d48' : '#0ea5e9') : `hsl(${Math.round(c.genome.accentHue)}, 82%, 62%)`;
                 const sphere = c.genome.sphereAffinity;
 
                 const bodyMat = injectOrganismRimShader(
                     new THREE.MeshStandardMaterial({ color: bodyColor, roughness: 0.42, metalness: 0.08 }),
-                    { rimHex: c.isHuman ? '#fde047' : accentColor, rimStrength: c.isCognitiveLeader ? 0.55 : 0.32 }
+                    { rimHex: c.faction === 'REBEL' ? '#fb7185' : (c.isHuman ? '#fde047' : accentColor), rimStrength: c.isCognitiveLeader ? 0.55 : 0.32 }
                 );
                 const accentMat = new THREE.MeshStandardMaterial({ color: accentColor, roughness: 0.35, metalness: 0.14 });
                 const eyeMat = new THREE.MeshBasicMaterial({ color: '#0f172a' });
@@ -4494,20 +4809,21 @@
                 const parts = { legs: [], fins: [], wings: [], arms: [] };
 
                 if (c.isHuman) {
-                    const torso = new THREE.Mesh(new THREE.CylinderGeometry(s * 0.42, s * 0.5, s * 1.15, 10), accentMat);
+                    // Minecraft-inspired blocky humanoid proportions
+                    const torso = new THREE.Mesh(new THREE.BoxGeometry(s * 0.85, s * 1.15, s * 0.52), accentMat);
                     torso.position.y = s * 1.25; torso.castShadow = true; group.add(torso);
-                    const head = new THREE.Mesh(new THREE.SphereGeometry(s * 0.36, 12, 12), bodyMat);
-                    head.position.y = s * 2.12; head.castShadow = true; group.add(head);
-                    const lEye = new THREE.Mesh(new THREE.SphereGeometry(s * 0.06, 6, 6), eyeMat);
-                    lEye.position.set(s * 0.33, s * 2.16, -s * 0.13); group.add(lEye);
-                    const rEye = new THREE.Mesh(new THREE.SphereGeometry(s * 0.06, 6, 6), eyeMat);
-                    rEye.position.set(s * 0.33, s * 2.16, s * 0.13); group.add(rEye);
+                    const head = new THREE.Mesh(new THREE.BoxGeometry(s * 0.72, s * 0.72, s * 0.72), bodyMat);
+                    head.position.y = s * 2.18; head.castShadow = true; group.add(head);
+                    const lEye = new THREE.Mesh(new THREE.BoxGeometry(s * 0.12, s * 0.12, s * 0.12), eyeMat);
+                    lEye.position.set(s * 0.35, s * 2.22, -s * 0.15); group.add(lEye);
+                    const rEye = new THREE.Mesh(new THREE.BoxGeometry(s * 0.12, s * 0.12, s * 0.12), eyeMat);
+                    rEye.position.set(s * 0.35, s * 2.22, s * 0.15); group.add(rEye);
                     [-1, 1].forEach((side) => {
-                        const leg = new THREE.Mesh(new THREE.CylinderGeometry(s * 0.13, s * 0.11, s * 0.72, 8), bodyMat);
-                        leg.position.set(0, s * 0.68, side * s * 0.22); leg.castShadow = true; group.add(leg);
+                        const leg = new THREE.Mesh(new THREE.BoxGeometry(s * 0.28, s * 0.74, s * 0.28), bodyMat);
+                        leg.position.set(0, s * 0.68, side * s * 0.2); leg.castShadow = true; group.add(leg);
                         parts.legs.push({ mesh: leg, side });
-                        const arm = new THREE.Mesh(new THREE.CylinderGeometry(s * 0.1, s * 0.09, s * 0.65, 8), bodyMat);
-                        arm.position.set(0, s * 1.52, side * s * 0.54); arm.castShadow = true; group.add(arm);
+                        const arm = new THREE.Mesh(new THREE.BoxGeometry(s * 0.24, s * 0.68, s * 0.24), bodyMat);
+                        arm.position.set(0, s * 1.48, side * s * 0.56); arm.castShadow = true; group.add(arm);
                         parts.arms.push({ mesh: arm, side });
                     });
                 } else if (sphere === 'OCEAN') {
@@ -4551,13 +4867,13 @@
                     });
                 }
 
-                if (c.isCognitiveLeader) {
+                if (c.isCognitiveLeader || c.faction === 'REBEL') {
                     const halo = new THREE.Mesh(
-                        new THREE.TorusGeometry(s * 0.65, Math.max(0.7, s * 0.08), 8, 20),
-                        new THREE.MeshBasicMaterial({ color: '#fde047' })
+                        new THREE.TorusGeometry(s * 0.68, Math.max(0.7, s * 0.08), 8, 20),
+                        new THREE.MeshBasicMaterial({ color: c.faction === 'REBEL' ? '#fb7185' : '#fde047' })
                     );
                     halo.rotation.x = Math.PI * 0.5;
-                    halo.position.y = c.isHuman ? s * 2.65 : s * 1.55;
+                    halo.position.y = c.isHuman ? s * 2.75 : s * 1.58;
                     group.add(halo);
                 }
 
@@ -4585,7 +4901,7 @@
                     threeState.nutrientMesh = null;
                 }
                 if (nutrients.length > 0) {
-                    const nGeo = new THREE.SphereGeometry(5.5, 10, 10);
+                    const nGeo = new THREE.BoxGeometry(7.5, 7.5, 7.5);
                     const nMat = injectTerrainAndFoliageShaders(
                         new THREE.MeshStandardMaterial({ color: '#fb7185', emissive: '#e11d48', emissiveIntensity: 0.32, roughness: 0.35 }),
                         { isFoliage: true, swayAmp: 0.25 }
@@ -4634,7 +4950,7 @@
                 threeState.camera = usePersp ? threeState.perspCamera : threeState.orthoCamera;
 
                 if (usePersp) {
-                    threeState.perspCamera.fov = activeFpv ? 76 : 44;
+                    threeState.perspCamera.fov = activeFpv ? 82 : 44;
                     threeState.perspCamera.updateProjectionMatrix();
                 } else {
                     const frustum = 950 / Math.max(0.25, camera.zoom);
@@ -4659,15 +4975,9 @@
                     threeState.sunLight.intensity = (0.65 + daylight * 1.95) * weatherLightMult;
                     threeState.sunLight.color.set(daylight < 0.45 ? '#fb923c' : '#fffbeb');
                 }
-                if (threeState.hemiLight) {
-                    threeState.hemiLight.intensity = (0.55 + daylight * 1.1) * weatherLightMult;
-                }
-                if (threeState.fillLight) {
-                    threeState.fillLight.intensity = (0.35 + nightFactor * 0.55) * weatherLightMult;
-                }
-                if (threeState.rimLight) {
-                    threeState.rimLight.intensity = (0.28 + daylight * 0.45) * weatherLightMult;
-                }
+                if (threeState.hemiLight) threeState.hemiLight.intensity = (0.55 + daylight * 1.1) * weatherLightMult;
+                if (threeState.fillLight) threeState.fillLight.intensity = (0.35 + nightFactor * 0.55) * weatherLightMult;
+                if (threeState.rimLight) threeState.rimLight.intensity = (0.28 + daylight * 0.45) * weatherLightMult;
 
                 const era = EARTH_ERAS[currentEraIndex];
                 const stormMix = currentWeather === 'storm' ? 1.0 : currentWeather === 'rain' ? 0.45 : 0.0;
@@ -4687,9 +4997,7 @@
                     threeState.skyDomeMat.uniforms.uNightMix.value = nightFactor;
                     threeState.skyDomeMat.uniforms.uEraTint.value.set(era.oceanColor).lerp(new THREE.Color('#2dd4bf'), 0.45);
                 }
-                if (threeState.skyDomeMesh) {
-                    threeState.skyDomeMesh.position.set(camera.x, 0, camera.y);
-                }
+                if (threeState.skyDomeMesh) threeState.skyDomeMesh.position.set(camera.x, 0, camera.y);
 
                 if (threeState.mistPlaneMat) {
                     threeState.mistPlaneMat.uniforms.uTime.value = wt;
@@ -4698,9 +5006,7 @@
                     threeState.mistPlaneMat.uniforms.uMistDensity.value = mistBase * (0.4 + daylight * 0.75);
                     threeState.mistPlaneMat.uniforms.uMistColor.value.set(daylight < 0.45 ? '#fdba74' : '#99f6e4');
                 }
-                if (threeState.mistPlaneMesh) {
-                    threeState.mistPlaneMesh.position.set(camera.x, 42 + Math.sin(wt * 0.5) * 4, camera.y);
-                }
+                if (threeState.mistPlaneMesh) threeState.mistPlaneMesh.position.set(camera.x, 42 + Math.sin(wt * 0.5) * 4, camera.y);
 
                 if (threeState.scene) {
                     const baseFog = new THREE.Color(era.oceanColor).lerp(new THREE.Color('#020811'), nightFactor * 0.72);
@@ -4763,12 +5069,7 @@
                         const bx = threeState.ambientDustBase[i * 3];
                         const by = threeState.ambientDustBase[i * 3 + 1];
                         const bz = threeState.ambientDustBase[i * 3 + 2];
-                        dPos.setXYZ(
-                            i,
-                            bx + Math.sin(wt * 0.45 + i) * 28,
-                            by + Math.cos(wt * 0.65 + i * 0.7) * 9,
-                            bz + Math.cos(wt * 0.38 + i * 1.1) * 28
-                        );
+                        dPos.setXYZ(i, bx + Math.sin(wt * 0.45 + i) * 28, by + Math.cos(wt * 0.65 + i * 0.7) * 9, bz + Math.cos(wt * 0.38 + i * 1.1) * 28);
                     }
                     dPos.needsUpdate = true;
                     threeState.ambientDustPoints.material.color.set(nightFactor > 0.55 ? '#5eead4' : '#fef08a');
@@ -4785,9 +5086,7 @@
                     }
                 }
 
-                if (threeState.houseGlowMat) {
-                    threeState.houseGlowMat.emissiveIntensity = 0.25 + nightFactor * 1.45;
-                }
+                if (threeState.houseGlowMat) threeState.houseGlowMat.emissiveIntensity = 0.25 + nightFactor * 1.45;
                 if (threeState.beaconSpire) {
                     threeState.beaconSpire.rotation.y += 0.04;
                     threeState.beaconSpire.position.y = 18 + Math.sin(wt * 2.2) * 2.5;
@@ -4797,60 +5096,44 @@
                     threeState.cloudGroup.rotation.y += 0.00045 * speedMultiplier;
                 }
 
-                if (threeState.creatureMeshes.size !== creatures.length) {
-                    rebuildThreeEntities();
-                }
+                if (threeState.creatureMeshes.size !== creatures.length) rebuildThreeEntities();
 
                 for (const [c, mesh] of threeState.creatureMeshes.entries()) {
+                    mesh.visible = !(activeFpv && c === selectedCreature);
                     const elev = getWorldElevation(c.x, c.y);
                     const gy = terraceHeightY(elev);
                     const s = c.genome.size * (0.62 + c.growthProgress * 0.42);
                     const sphere = c.genome.sphereAffinity;
                     let py = gy;
-                    if (sphere === 'ATMOSPHERE') {
-                        py = gy + 38 + Math.sin(c.walkPhase * 0.6) * 4.5;
-                    } else if (sphere === 'OCEAN') {
+                    if (sphere === 'ATMOSPHERE') py = gy + 38 + Math.sin(c.walkPhase * 0.6) * 4.5;
+                    else if (sphere === 'OCEAN') {
                         const waveH = computeOceanWaveHeight(c.x, c.y, wt, currentWeather);
                         py = Math.max(gy, -12.5 + waveH + Math.sin(c.walkPhase * 0.5) * 2.2);
-                    } else if (c.isHuman) {
-                        py = gy + Math.abs(Math.sin(c.walkPhase)) * 1.8;
-                    } else {
-                        py = gy + Math.abs(Math.sin(c.walkPhase)) * 1.2;
-                    }
+                    } else if (c.isHuman) py = gy + Math.abs(Math.sin(c.walkPhase)) * 1.8;
+                    else py = gy + Math.abs(Math.sin(c.walkPhase)) * 1.2;
 
                     mesh.position.set(c.x, py, c.y);
                     mesh.rotation.y = -c.angle;
                     mesh.rotation.z = c.bankAngle || 0;
                     mesh.rotation.x = (c.pitchAngle || 0) * 0.5;
-                    const sc = 0.72 + c.growthProgress * 0.35;
-                    mesh.scale.setScalar(sc);
+                    mesh.scale.setScalar(0.72 + c.growthProgress * 0.35);
 
                     const parts = mesh.userData;
                     if (parts) {
                         const swing = Math.sin(c.walkPhase) * 0.52;
                         if (parts.legs) {
-                            parts.legs.forEach((l, idx) => {
+                            parts.legs.forEach((l) => {
                                 const ph = l.phase !== undefined ? l.phase : (l.side || 1) * Math.PI * 0.5;
                                 l.mesh.rotation.z = Math.sin(c.walkPhase + ph) * 0.45;
                                 if (c.isHuman && l.side) l.mesh.position.x = Math.sin(c.walkPhase + (l.side > 0 ? 0 : Math.PI)) * s * 0.22;
                             });
                         }
-                        if (parts.arms) {
-                            parts.arms.forEach((a) => {
-                                a.mesh.rotation.z = -swing * 0.65 * (a.side || 1);
-                            });
-                        }
-                        if (parts.wings) {
-                            parts.wings.forEach((w) => {
-                                w.mesh.rotation.x = Math.sin(c.walkPhase * 1.45) * 0.58 * (w.side || 1);
-                            });
-                        }
-                        if (parts.fins) {
-                            parts.fins.forEach((f, idx) => {
-                                if (idx === 0) f.rotation.y = Math.sin(c.walkPhase * 1.2) * 0.42;
-                                else f.rotation.x = Math.cos(c.walkPhase * 1.1) * 0.25;
-                            });
-                        }
+                        if (parts.arms) parts.arms.forEach((a) => { a.mesh.rotation.z = -swing * 0.65 * (a.side || 1); });
+                        if (parts.wings) parts.wings.forEach((w) => { w.mesh.rotation.x = Math.sin(c.walkPhase * 1.45) * 0.58 * (w.side || 1); });
+                        if (parts.fins) parts.fins.forEach((f, idx) => {
+                            if (idx === 0) f.rotation.y = Math.sin(c.walkPhase * 1.2) * 0.42;
+                            else f.rotation.x = Math.cos(c.walkPhase * 1.1) * 0.25;
+                        });
                     }
                 }
 
@@ -4891,14 +5174,34 @@
             }
 
             // =========================================================================
-            // SECTION 6: 2D PROJECTION, SENSORY OVERLAYS & CANVAS RENDERING
+            // SECTION 6: 2D PROJECTION, COMMAND BEAMS, REVOLUTION WAVES & OVERLAYS
             // =========================================================================
+            function drawSafeRoundRect(c2d, x, y, w, h, r) {
+                if (typeof c2d.roundRect === 'function') {
+                    c2d.beginPath();
+                    c2d.roundRect(x, y, w, h, r);
+                    return;
+                }
+                c2d.beginPath();
+                c2d.moveTo(x + r, y);
+                c2d.lineTo(x + w - r, y);
+                c2d.quadraticCurveTo(x + w, y, x + w, y + r);
+                c2d.lineTo(x + w, y + h - r);
+                c2d.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+                c2d.lineTo(x + r, y + h);
+                c2d.quadraticCurveTo(x, y + h, x, y + h - r);
+                c2d.lineTo(x, y + r);
+                c2d.quadraticCurveTo(x, y, x + r, y);
+                c2d.closePath();
+            }
+
             function worldToScreen(wx, wy) {
                 if (threeState.initialized && threeState.camera) {
                     const elev = getWorldElevation(wx, wy);
                     const gy = terraceHeightY(elev);
                     const v = new THREE.Vector3(wx, gy + 8, wy);
                     v.project(threeState.camera);
+                    if (v.z > 1) return { x: -9999, y: -9999 };
                     return {
                         x: (v.x * 0.5 + 0.5) * simCanvas.width,
                         y: (-v.y * 0.5 + 0.5) * simCanvas.height
@@ -4918,9 +5221,7 @@
                     raycaster.setFromCamera(new THREE.Vector2(ndcX, ndcY), threeState.camera);
                     const groundPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
                     const hit = new THREE.Vector3();
-                    if (raycaster.ray.intersectPlane(groundPlane, hit)) {
-                        return { x: hit.x, y: hit.z };
-                    }
+                    if (raycaster.ray.intersectPlane(groundPlane, hit)) return { x: hit.x, y: hit.z };
                 }
                 return {
                     x: (sx - simCanvas.width * 0.5) / camera.zoom + camera.x,
@@ -4934,6 +5235,54 @@
 
                 const activeFpv = Boolean(isFpvMode && selectedCreature && creatures.includes(selectedCreature));
 
+                // Draw Revolution Shockwaves
+                for (let i = revolutionWaves.length - 1; i >= 0; i--) {
+                    const rw = revolutionWaves[i];
+                    rw.radius += 7.5;
+                    rw.alpha = Math.max(0, 1 - rw.radius / rw.maxRadius);
+                    if (rw.alpha <= 0.02) {
+                        revolutionWaves.splice(i, 1);
+                        continue;
+                    }
+                    const sp = worldToScreen(rw.x, rw.y);
+                    ctx.save();
+                    ctx.strokeStyle = `rgba(251, 113, 133, ${rw.alpha * 0.85})`;
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.arc(sp.x, sp.y, rw.radius * camera.zoom, 0, Math.PI * 2);
+                    ctx.stroke();
+                    ctx.font = '700 11px "JetBrains Mono", monospace';
+                    ctx.fillStyle = `rgba(253, 224, 71, ${rw.alpha})`;
+                    ctx.textAlign = 'center';
+                    ctx.fillText(rw.label, sp.x, sp.y - rw.radius * camera.zoom - 6);
+                    ctx.restore();
+                }
+
+                // Draw Human Command Beams
+                for (let i = commandBeams.length - 1; i >= 0; i--) {
+                    const bm = commandBeams[i];
+                    bm.life--;
+                    if (bm.life <= 0 || !creatures.includes(bm.from) || !creatures.includes(bm.to)) {
+                        commandBeams.splice(i, 1);
+                        continue;
+                    }
+                    if (!activeFpv && showSensoryOverlay) {
+                        const p1 = worldToScreen(bm.from.x, bm.from.y);
+                        const p2 = worldToScreen(bm.to.x, bm.to.y);
+                        ctx.save();
+                        ctx.strokeStyle = bm.color;
+                        ctx.globalAlpha = Math.min(0.85, bm.life / 45);
+                        ctx.lineWidth = 1.8;
+                        ctx.setLineDash([5, 4]);
+                        ctx.beginPath();
+                        ctx.moveTo(p1.x, p1.y);
+                        ctx.lineTo(p2.x, p2.y);
+                        ctx.stroke();
+                        ctx.setLineDash([]);
+                        ctx.restore();
+                    }
+                }
+
                 if (!activeFpv && showZoneLabels) {
                     ctx.save();
                     ctx.font = '600 11px "JetBrains Mono", monospace';
@@ -4942,8 +5291,7 @@
                         const sp = worldToScreen(isl.x, isl.y);
                         if (sp.x < -160 || sp.x > simCanvas.width + 160 || sp.y < -120 || sp.y > simCanvas.height + 120) continue;
                         ctx.fillStyle = 'rgba(2, 12, 22, 0.72)';
-                        ctx.beginPath();
-                        ctx.roundRect(sp.x - 86, sp.y - 16, 172, 22, 7);
+                        drawSafeRoundRect(ctx, sp.x - 86, sp.y - 16, 172, 22, 7);
                         ctx.fill();
                         ctx.strokeStyle = isl.color;
                         ctx.lineWidth = 1;
@@ -4965,7 +5313,7 @@
                         ctx.moveTo(sp.x, sp.y);
                         ctx.arc(sp.x, sp.y, rPx, c.angle - 0.58, c.angle + 0.58);
                         ctx.closePath();
-                        ctx.fillStyle = isSel ? 'rgba(45, 212, 191, 0.14)' : 'rgba(148, 163, 184, 0.04)';
+                        ctx.fillStyle = isSel ? 'rgba(45, 212, 191, 0.14)' : (c.faction === 'REBEL' ? 'rgba(251, 113, 133, 0.08)' : 'rgba(148, 163, 184, 0.04)');
                         ctx.fill();
 
                         if (isSel && c.activeTarget) {
@@ -4989,20 +5337,20 @@
                     ctx.textAlign = 'center';
                     for (const c of creatures) {
                         const isSel = c === selectedCreature;
-                        if (!isSel && !c.isCognitiveLeader && c.stress < 0.55) continue;
+                        if (!isSel && !c.isCognitiveLeader && !c.commandedTask && c.faction !== 'REBEL' && c.stress < 0.55) continue;
                         const sp = worldToScreen(c.x, c.y);
                         if (sp.x < -140 || sp.x > simCanvas.width + 140 || sp.y < -90 || sp.y > simCanvas.height + 90) continue;
-                        const label = isSel ? `${c.realName.split(' ')[0]} \u2022 ${c.stateLabel}` : `${c.genome.id} \u2022 ${c.stateLabel}`;
+                        const prefix = c.faction === 'REBEL' ? '[REV] ' : '';
+                        const label = isSel ? `${prefix}${c.realName.split(' ')[0]} \u2022 ${c.stateLabel}` : `${prefix}${c.commandedTask ? c.commandedTask : c.stateLabel}`;
                         const tw = ctx.measureText(label).width + 14;
                         const by = sp.y - 24;
-                        ctx.fillStyle = isSel ? 'rgba(6, 78, 59, 0.88)' : 'rgba(15, 23, 42, 0.82)';
-                        ctx.beginPath();
-                        ctx.roundRect(sp.x - tw * 0.5, by - 12, tw, 18, 6);
+                        ctx.fillStyle = c.faction === 'REBEL' ? 'rgba(136, 19, 55, 0.88)' : (isSel ? 'rgba(6, 78, 59, 0.88)' : 'rgba(15, 23, 42, 0.82)');
+                        drawSafeRoundRect(ctx, sp.x - tw * 0.5, by - 12, tw, 18, 6);
                         ctx.fill();
-                        ctx.strokeStyle = isSel ? '#5eead4' : 'rgba(251, 191, 36, 0.55)';
+                        ctx.strokeStyle = c.faction === 'REBEL' ? '#fb7185' : (isSel ? '#5eead4' : 'rgba(251, 191, 36, 0.55)');
                         ctx.lineWidth = 1;
                         ctx.stroke();
-                        ctx.fillStyle = isSel ? '#ecfdf5' : '#fde68a';
+                        ctx.fillStyle = c.faction === 'REBEL' ? '#ffe4e6' : (isSel ? '#ecfdf5' : '#fde68a');
                         ctx.fillText(label, sp.x, by + 1);
                     }
                     ctx.restore();
@@ -5027,17 +5375,53 @@
                 }
 
                 if (activeFpv) {
+                    const fc = selectedCreature;
                     const cx = simCanvas.width * 0.5;
                     const cy = simCanvas.height * 0.5;
                     ctx.save();
-                    ctx.strokeStyle = 'rgba(253, 224, 71, 0.35)';
-                    ctx.lineWidth = 1;
+                    if (fc.genome.sphereAffinity === 'OCEAN') {
+                        ctx.fillStyle = 'rgba(6, 78, 110, 0.22)';
+                        ctx.fillRect(0, 0, simCanvas.width, simCanvas.height);
+                    }
+                    // Subtle FPV crosshair
+                    ctx.strokeStyle = 'rgba(253, 224, 71, 0.45)';
+                    ctx.lineWidth = 1.2;
                     ctx.beginPath();
-                    ctx.moveTo(cx - 12, cy); ctx.lineTo(cx - 4, cy);
-                    ctx.moveTo(cx + 4, cy); ctx.lineTo(cx + 12, cy);
-                    ctx.moveTo(cx, cy - 12); ctx.lineTo(cx, cy - 4);
-                    ctx.moveTo(cx, cy + 4); ctx.lineTo(cx, cy + 12);
+                    ctx.moveTo(cx - 14, cy); ctx.lineTo(cx - 5, cy);
+                    ctx.moveTo(cx + 5, cy); ctx.lineTo(cx + 14, cy);
+                    ctx.moveTo(cx, cy - 14); ctx.lineTo(cx, cy - 5);
+                    ctx.moveTo(cx, cy + 5); ctx.lineTo(cx, cy + 14);
                     ctx.stroke();
+
+                    // FPV Compass Strip
+                    const viewYaw = fc.angle + fpvCam.yawOffset;
+                    const deg = (((viewYaw * 180) / Math.PI) % 360 + 360) % 360;
+                    const dirs = [['E', 0], ['SE', 45], ['S', 90], ['SW', 135], ['W', 180], ['NW', 225], ['N', 270], ['NE', 315]];
+                    ctx.fillStyle = 'rgba(2, 12, 22, 0.65)';
+                    drawSafeRoundRect(ctx, cx - 130, 86, 260, 22, 8);
+                    ctx.fill();
+                    ctx.font = '600 10px "JetBrains Mono", monospace';
+                    ctx.textAlign = 'center';
+                    for (const [lbl, dAngle] of dirs) {
+                        let diff = ((dAngle - deg + 540) % 360) - 180;
+                        if (Math.abs(diff) <= 58) {
+                            ctx.fillStyle = lbl.length === 1 ? '#5eead4' : '#94a3b8';
+                            ctx.fillText(lbl, cx + diff * 2.0, 100);
+                        }
+                    }
+
+                    // Nearby living beings tags in FPV
+                    ctx.font = '500 10px "JetBrains Mono", monospace';
+                    for (const other of creatures) {
+                        if (other === fc) continue;
+                        const dist = Math.hypot(other.x - fc.x, other.y - fc.y);
+                        if (dist > 420) continue;
+                        const sp = worldToScreen(other.x, other.y);
+                        if (sp.x < 20 || sp.x > simCanvas.width - 20 || sp.y < 20 || sp.y > simCanvas.height - 20) continue;
+                        const tag = `${other.realName.split(' (')[0]} (${Math.round(dist)}m)`;
+                        ctx.fillStyle = other.faction === 'REBEL' ? 'rgba(251,113,133,0.9)' : 'rgba(165,243,252,0.88)';
+                        ctx.fillText(tag, sp.x, sp.y - 16);
+                    }
                     ctx.restore();
                 }
             }
@@ -5053,7 +5437,7 @@
             }
 
             function getTotalBiospherePopulation() {
-                return Math.max(0, STARTING_POPULATION + (creatures.length - 60) * POPULATION_PER_AGENT);
+                return creatures.length;
             }
 
             function formatClock(hoursFloat) {
@@ -5080,11 +5464,9 @@
                 const span = Math.max(1, nextStage.minXP - curStage.minXP);
                 const pct = culturalStageIndex === CULTURAL_STAGES.length - 1 ? 100 : Math.max(0, Math.min(100, ((collectiveKnowledgeXP - curStage.minXP) / span) * 100));
 
-                const hudCult = document.getElementById('hudCultureStage');
                 const titleEl = document.getElementById('cultureStageTitle');
                 const xpEl = document.getElementById('cultureXpText');
                 const barEl = document.getElementById('cultureXpBar');
-                if (hudCult) hudCult.textContent = curStage.name.split(': ')[1] || curStage.name;
                 if (titleEl) titleEl.textContent = curStage.name;
                 if (xpEl) xpEl.textContent = `${Math.floor(collectiveKnowledgeXP)} XP`;
                 if (barEl) barEl.style.width = `${pct.toFixed(0)}%`;
@@ -5110,13 +5492,20 @@
 
             function updateHUD() {
                 updateCulturalProgression();
-                const pop = getTotalBiospherePopulation();
-                document.getElementById('hudPop').textContent = formatPopCount(pop);
+                const pop = creatures.length;
+                const humanCnt = creatures.filter(c => c.isHuman).length;
+                const faunaCnt = pop - humanCnt;
+                document.getElementById('hudPop').textContent = `${pop} Living (${humanCnt}H / ${faunaCnt}F)`;
                 const chartPop = document.getElementById('chartPopulation');
-                if (chartPop) chartPop.textContent = formatPopCount(pop);
+                if (chartPop) chartPop.textContent = `${pop} Living`;
                 const leaders = creatures.filter(c => c.isCognitiveLeader).length;
                 document.getElementById('hudLeaderCount').textContent = `${leaders}/${creatures.length}`;
                 document.getElementById('hudStructuresCount').textContent = `${builtStructures.length}`;
+
+                const revEl = document.getElementById('hudRevolutionBadge');
+                if (revEl) revEl.textContent = `${COLONY_REGIMES[currentRegimeIndex].split(' ')[1] || COLONY_REGIMES[currentRegimeIndex]} \u2022 ${revolutionCount}`;
+                const tasksEl = document.getElementById('hudTasksCount');
+                if (tasksEl) tasksEl.textContent = String(tasksIssuedTotal);
 
                 const tideEl = document.getElementById('hudTideSeason');
                 if (tideEl) {
@@ -5203,8 +5592,9 @@
                 const activeNiches = new Set(creatures.map(c => c.species)).size;
                 const challenges = [
                     { title: 'Evolve Human ANN to Stage 2+', done: maxHStage >= 2, prog: `Stage ${maxHStage}/2` },
-                    { title: 'Raise 3+ Biosphere Shelters', done: builtStructures.length >= 3, prog: `${builtStructures.length}/3` },
-                    { title: 'Discover 3+ Cultural Inventions', done: new Set(creatures.flatMap(c => c.inventions)).size >= 3, prog: `${new Set(creatures.flatMap(c => c.inventions)).size}/3` },
+                    { title: 'Assign 5+ Tasks via Human Commander', done: tasksIssuedTotal >= 5, prog: `${tasksIssuedTotal}/5` },
+                    { title: 'Spark a Human-led Revolution', done: revolutionCount >= 1, prog: `${revolutionCount}/1` },
+                    { title: 'Raise 3+ Voxel Shelters', done: builtStructures.length >= 3, prog: `${builtStructures.length}/3` },
                     { title: 'Sustain All 25 Niches in Storm', done: sustainedAll25ThroughEvent || (activeNiches >= 25 && currentWeather === 'storm'), prog: `${activeNiches}/25` }
                 ];
                 const doneCount = challenges.filter(ch => ch.done).length;
@@ -5250,9 +5640,9 @@
                     const inputs = b.net.nodes.filter(n => n.type === 'input');
                     const hiddens = b.net.nodes.filter(n => n.type === 'hidden');
                     const outputs = b.net.nodes.filter(n => n.type === 'output');
-                    inputs.forEach((n, idx) => nodeCoords.set(n.id, makePts(inputs.length, cols[0])[idx]));
-                    hiddens.forEach((n, idx) => nodeCoords.set(n.id, makePts(hiddens.length, cols[1])[idx]));
-                    outputs.forEach((n, idx) => nodeCoords.set(n.id, makePts(outputs.length, cols[2])[idx]));
+                    inputs.forEach((n, idx) => nodeCoords.set(n, makePts(inputs.length, cols[0])[idx]));
+                    hiddens.forEach((n, idx) => nodeCoords.set(n, makePts(hiddens.length, cols[1])[idx]));
+                    outputs.forEach((n, idx) => nodeCoords.set(n, makePts(outputs.length, cols[2])[idx]));
 
                     for (const conn of b.net.connections) {
                         const pA = nodeCoords.get(conn.from);
@@ -5351,6 +5741,11 @@
                 document.getElementById('dnaStressRes').textContent = `${Math.round(c.stress * 100)}% / ${Math.round(c.resilience * 100)}%`;
                 document.getElementById('survivalDefense').textContent = c.genome.defense;
                 document.getElementById('survivalEscapes').textContent = `${c.successfulEscapes}`;
+                const facEl = document.getElementById('dnaFactionBadge');
+                if (facEl) {
+                    facEl.textContent = c.faction === 'REBEL' ? 'REBEL' : 'COLONY';
+                    facEl.className = c.faction === 'REBEL' ? 'insp-fact-v text-rose-400' : 'insp-fact-v text-teal-300';
+                }
                 document.getElementById('dnaEcology').textContent = cfg.ecology;
                 document.getElementById('dnaMindGrowthText').textContent = `Mind IQ: ${c.mindGrowth.toFixed(2)}`;
                 document.getElementById('neuralStateLabel').textContent = c.stateLabel;
@@ -5371,6 +5766,8 @@
                         document.getElementById('humanAnnProgressBar').style.width = `${prog.toFixed(0)}%`;
                         const synCnt = (c.brain && c.brain.isNeataptic && c.brain.net) ? c.brain.net.connections.length : ((c.brain?.hidSize || 2) * (c.brain?.inSize || 2));
                         document.getElementById('humanAnnSynapses').textContent = `Synapses: ${synCnt} \u2022 Learned: ${c.brain?.learningUpdates || 0}`;
+                        const cmdStats = document.getElementById('humanCmdStats');
+                        if (cmdStats) cmdStats.textContent = `Cmds: ${c.tasksIssued || 0} \u2022 Revs: ${c.revolutionsLed || 0}`;
                     }
                 }
 
@@ -5500,6 +5897,9 @@
                     tick: simTick,
                     era: EARTH_ERAS[currentEraIndex].name,
                     weather: currentWeather,
+                    regime: COLONY_REGIMES[currentRegimeIndex],
+                    revolutions: revolutionCount,
+                    tasksIssued: tasksIssuedTotal,
                     culturalStage: CULTURAL_STAGES[culturalStageIndex].name,
                     population: getTotalBiospherePopulation(),
                     history: telemetryHistory,
@@ -5520,9 +5920,7 @@
             }
 
             function openSpecimenLab() {
-                if (!selectedCreature || !creatures.includes(selectedCreature)) {
-                    selectedCreature = creatures[0] || null;
-                }
+                if (!selectedCreature || !creatures.includes(selectedCreature)) selectedCreature = creatures[0] || null;
                 if (!selectedCreature) return;
                 isModalOpen = true;
                 document.getElementById('specimenLabModal').classList.remove('hidden');
@@ -5618,8 +6016,7 @@
                     g.lineWidth = 1;
                     for (let i = 0; i < nodes.length; i++) {
                         for (let j = i + 1; j < nodes.length; j++) {
-                            const d = Math.hypot(nodes[i].x - nodes[j].x, nodes[i].y - nodes[j].y);
-                            if (d < 85) {
+                            if (Math.hypot(nodes[i].x - nodes[j].x, nodes[i].y - nodes[j].y) < 85) {
                                 g.beginPath(); g.moveTo(nodes[i].x, nodes[i].y); g.lineTo(nodes[j].x, nodes[j].y); g.stroke();
                             }
                         }
@@ -5641,12 +6038,7 @@
                         ig.strokeStyle = 'rgba(56, 189, 248, 0.18)';
                         ig.beginPath(); ig.arc(icx, icy, r, 0, Math.PI * 2); ig.stroke();
                     }
-                    const items = [
-                        { ang: 0.4, dist: 38, col: '#34d399' },
-                        { ang: 2.1, dist: 56, col: '#38bdf8' },
-                        { ang: 4.2, dist: 44, col: '#fb7185' }
-                    ];
-                    items.forEach((it, idx) => {
+                    [{ ang: 0.4, dist: 38, col: '#34d399' }, { ang: 2.1, dist: 56, col: '#38bdf8' }, { ang: 4.2, dist: 44, col: '#fb7185' }].forEach((it, idx) => {
                         const a = it.ang + renderFrame * 0.02 * (idx % 2 === 0 ? 1 : -1);
                         ig.fillStyle = it.col;
                         ig.beginPath();
@@ -5734,6 +6126,11 @@
                 builtStructures = [];
                 collectiveKnowledgeXP = 0;
                 culturalStageIndex = 0;
+                revolutionCount = 0;
+                tasksIssuedTotal = 0;
+                currentRegimeIndex = 0;
+                revolutionWaves.length = 0;
+                commandBeams.length = 0;
                 spawnedGenomeSignatures.clear();
                 nameCursor = 0;
                 maxGeneration = 1;
@@ -5762,7 +6159,7 @@
 
                 selectedCreature = creatures[0] || null;
                 updateInspectorHUD();
-                addEvolutionMilestone('Seeded 7-Island Archipelago');
+                addEvolutionMilestone('Seeded 7-Island Voxel Archipelago');
             }
 
             function setEra(idx, announce = true) {
@@ -5781,11 +6178,8 @@
 
             function cycleWeather(nextWx = null) {
                 const order = ['clear', 'rain', 'storm', 'mist'];
-                if (nextWx && order.includes(nextWx)) {
-                    currentWeather = nextWx;
-                } else {
-                    currentWeather = order[(order.indexOf(currentWeather) + 1) % order.length];
-                }
+                if (nextWx && order.includes(nextWx)) currentWeather = nextWx;
+                else currentWeather = order[(order.indexOf(currentWeather) + 1) % order.length];
                 weatherTimer = 420;
                 const sel = document.getElementById('selectWeather');
                 if (sel) sel.value = currentWeather;
@@ -5806,6 +6200,10 @@
                 timeOfDay = preset.timeOfDay;
                 syncSlidersFromParams();
                 setEra(preset.eraIdx, false);
+                if (key === 'people_revolution') {
+                    const h = creatures.find(c => c.isHuman);
+                    if (h) triggerHumanRevolution(h);
+                }
                 recordEventMarker(`Scenario: ${preset.label}`, '#fbbf24');
                 addChronicleEntry(preset.narration, 'text-amber-200');
                 showToast(`Scenario Active: ${preset.label}`);
@@ -5869,12 +6267,18 @@
                         c.humanNeuralXP = 0;
                         c.isCognitiveLeader = false;
                         c.inventions = [];
+                        c.tasksIssued = 0;
+                        c.revolutionsLed = 0;
+                        c.faction = 'COLONY';
                         c.brain = new NeuralBrain(null, false, true, 0);
                     }
                 }
                 builtStructures = [];
                 collectiveKnowledgeXP = 0;
                 culturalStageIndex = 0;
+                revolutionCount = 0;
+                tasksIssuedTotal = 0;
+                currentRegimeIndex = 0;
                 rebuildTerracedWorld();
                 updateInspectorHUD();
                 updateHUD();
@@ -5884,17 +6288,9 @@
 
             function captureSimulationSnapshot(label = '') {
                 return {
-                    label,
-                    tick: simTick,
-                    worldSeed,
-                    currentEraIndex,
-                    eraProgress,
-                    timeOfDay,
-                    currentWeather,
-                    soilFertility,
-                    tideOffset,
-                    collectiveKnowledgeXP,
-                    culturalStageIndex,
+                    label, tick: simTick, worldSeed, currentEraIndex, eraProgress, timeOfDay, currentWeather,
+                    soilFertility, tideOffset, collectiveKnowledgeXP, culturalStageIndex,
+                    revolutionCount, tasksIssuedTotal, currentRegimeIndex,
                     params: { ...params },
                     builtStructures: builtStructures.map(s => ({ ...s })),
                     nutrients: nutrients.map(n => ({ ...n })),
@@ -5904,6 +6300,7 @@
                         parentId: c.parentId, parentName: c.parentName, resilience: c.resilience,
                         stress: c.stress, isHuman: c.isHuman, humanAnnStage: c.humanAnnStage,
                         humanNeuralXP: c.humanNeuralXP, isCognitiveLeader: c.isCognitiveLeader,
+                        faction: c.faction, tasksIssued: c.tasksIssued, revolutionsLed: c.revolutionsLed,
                         realName: c.realName, genome: { ...c.genome },
                         angle: c.angle, energy: c.energy, hydration: c.hydration,
                         offspring: c.offspring, fitness: c.fitness, ageTicks: c.ageTicks,
@@ -5928,6 +6325,9 @@
                 tideOffset = snap.tideOffset ?? 0;
                 collectiveKnowledgeXP = snap.collectiveKnowledgeXP || 0;
                 culturalStageIndex = snap.culturalStageIndex || 0;
+                revolutionCount = snap.revolutionCount || 0;
+                tasksIssuedTotal = snap.tasksIssuedTotal || 0;
+                currentRegimeIndex = snap.currentRegimeIndex || 0;
                 if (snap.params) Object.assign(params, snap.params);
                 builtStructures = (snap.builtStructures || []).map(s => ({ ...s }));
                 nutrients = (snap.nutrients || []).map(n => ({ ...n }));
@@ -5938,6 +6338,9 @@
                     org.genome = { ...d.genome };
                     org.humanAnnStage = d.humanAnnStage || 0;
                     org.humanNeuralXP = d.humanNeuralXP || 0;
+                    org.faction = d.faction || 'COLONY';
+                    org.tasksIssued = d.tasksIssued || 0;
+                    org.revolutionsLed = d.revolutionsLed || 0;
                     org.angle = d.angle || 0;
                     org.energy = d.energy ?? 120;
                     org.hydration = d.hydration ?? 100;
@@ -6005,10 +6408,7 @@
 
             function copySeedStateCode() {
                 const compact = {
-                    s: worldSeed,
-                    e: currentEraIndex,
-                    t: Number(timeOfDay.toFixed(1)),
-                    w: currentWeather,
+                    s: worldSeed, e: currentEraIndex, t: Number(timeOfDay.toFixed(1)), w: currentWeather,
                     p: [params.tempShift, params.foodRate, Number(params.mutationRate.toFixed(2)), Number(params.burnRate.toFixed(2))]
                 };
                 const code = 'dl1|' + btoa(JSON.stringify(compact));
@@ -6093,7 +6493,7 @@
                 seedInitialCreatures();
                 setEra(0, false);
                 recordEventMarker('New Seed', '#2dd4bf');
-                addChronicleEntry(`Generated fresh archipelago seed ${worldSeed.toFixed(2)}.`, 'text-teal-300');
+                addChronicleEntry(`Generated fresh voxel archipelago seed ${worldSeed.toFixed(2)}.`, 'text-teal-300');
                 showToast(`New Seed ${worldSeed.toFixed(2)} across 7 Islands`);
             }
 
@@ -6112,11 +6512,9 @@
                 ['inspect', 'food', 'spawn', 'toxin'].forEach(m => {
                     const btn = document.getElementById(`tool${m.charAt(0).toUpperCase() + m.slice(1)}`);
                     if (!btn) return;
-                    if (m === mode) {
-                        btn.className = "px-2.5 sm:px-3 py-2 rounded-xl text-xs font-medium transition flex items-center gap-1.5 shrink-0 bg-teal-500/25 text-teal-200 border border-teal-400/40";
-                    } else {
-                        btn.className = "px-2.5 sm:px-3 py-2 rounded-xl text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800/60 transition flex items-center gap-1.5 shrink-0";
-                    }
+                    btn.className = m === mode
+                        ? "px-2.5 sm:px-3 py-2 rounded-xl text-xs font-medium transition flex items-center gap-1.5 shrink-0 bg-teal-500/25 text-teal-200 border border-teal-400/40"
+                        : "px-2.5 sm:px-3 py-2 rounded-xl text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800/60 transition flex items-center gap-1.5 shrink-0";
                 });
             }
 
@@ -6191,9 +6589,39 @@
                         const h = creatures.find(c => c.isHuman) || creatures[0];
                         if (h) {
                             selectedCreature = h;
+                            camera.x = h.x; camera.y = h.y;
                             updateInspectorHUD();
                             showToast(`Inspecting ${h.realName}`);
                         }
+                        break;
+                    }
+                    case 'issue-human-task': {
+                        const commander = (selectedCreature && selectedCreature.isHuman) ? selectedCreature : creatures.find(c => c.isHuman);
+                        const taskName = document.getElementById('humanTaskSelect')?.value || 'Harvest Fruit';
+                        if (commander) {
+                            issueTaskFromHuman(commander, taskName, 560);
+                            updateInspectorHUD();
+                            updateHUD();
+                        }
+                        break;
+                    }
+                    case 'spark-revolution': {
+                        const leader = (selectedCreature && selectedCreature.isHuman) ? selectedCreature : creatures.find(c => c.isHuman);
+                        triggerHumanRevolution(leader);
+                        break;
+                    }
+                    case 'train-all-humans': {
+                        const humans = creatures.filter(c => c.isHuman);
+                        humans.forEach(h => {
+                            h.humanNeuralXP += 8.0;
+                            h.brain.reinforce(1.0);
+                            h.isCognitiveLeader = true;
+                        });
+                        collectiveKnowledgeXP += humans.length * 1.5;
+                        updateInspectorHUD();
+                        updateHUD();
+                        showToast(`Trained & upgraded ANN for all ${humans.length} Humans`);
+                        audioEngine.playChime(740, 0.22);
                         break;
                     }
                     case 'train-human':
@@ -6387,10 +6815,7 @@
             // =========================================================================
             document.addEventListener('click', (e) => {
                 const msBtn = e.target.closest('[data-milestone-idx]');
-                if (msBtn) {
-                    restoreMilestoneByIndex(Number(msBtn.getAttribute('data-milestone-idx')));
-                    return;
-                }
+                if (msBtn) { restoreMilestoneByIndex(Number(msBtn.getAttribute('data-milestone-idx'))); return; }
                 const filterBtn = e.target.closest('[data-chart-filter]');
                 if (filterBtn) {
                     chartFilter = filterBtn.getAttribute('data-chart-filter');
@@ -6404,31 +6829,18 @@
                     return;
                 }
                 const modeBtn = e.target.closest('[data-mode]');
-                if (modeBtn) {
-                    setClickMode(modeBtn.getAttribute('data-mode'));
-                    return;
-                }
+                if (modeBtn) { setClickMode(modeBtn.getAttribute('data-mode')); return; }
                 const spdBtn = e.target.closest('[data-speed]');
-                if (spdBtn) {
-                    setSpeed(Number(spdBtn.getAttribute('data-speed')));
-                    return;
-                }
+                if (spdBtn) { setSpeed(Number(spdBtn.getAttribute('data-speed'))); return; }
                 const eraBtn = e.target.closest('[data-era]');
-                if (eraBtn) {
-                    setEra(Number(eraBtn.getAttribute('data-era')));
-                    return;
-                }
+                if (eraBtn) { setEra(Number(eraBtn.getAttribute('data-era'))); return; }
                 const actBtn = e.target.closest('[data-action]');
-                if (actBtn) {
-                    handleAction(actBtn.getAttribute('data-action'));
-                }
+                if (actBtn) handleAction(actBtn.getAttribute('data-action'));
             });
 
             document.getElementById('spawnSpeciesSelect')?.addEventListener('change', () => setClickMode('spawn'));
             document.getElementById('camPresetSelect')?.addEventListener('change', (e) => applyCameraPreset(e.target.value));
-            document.getElementById('scenarioPresetSelect')?.addEventListener('change', (e) => {
-                if (e.target.value) applyScenarioPreset(e.target.value);
-            });
+            document.getElementById('scenarioPresetSelect')?.addEventListener('change', (e) => { if (e.target.value) applyScenarioPreset(e.target.value); });
             document.getElementById('dnaGoalSelect')?.addEventListener('change', (e) => {
                 if (selectedCreature) {
                     selectedCreature.assignedGoal = e.target.value;
@@ -6437,6 +6849,16 @@
                 }
             });
             document.getElementById('selectWeather')?.addEventListener('change', (e) => cycleWeather(e.target.value));
+            document.getElementById('cryoSearchInput')?.addEventListener('input', (e) => {
+                const q = e.target.value.trim().toLowerCase();
+                if (q.length < 2) return;
+                const match = creatures.find(c => c.realName.toLowerCase().includes(q) || c.genome.id.toLowerCase().includes(q));
+                if (match && match !== selectedCreature) {
+                    selectedCreature = match;
+                    updateInspectorHUD();
+                    syncSpecimenLabModal();
+                }
+            });
 
             document.querySelectorAll('[data-input-action="sliders"]').forEach(sl => {
                 sl.addEventListener('input', () => {
@@ -6491,23 +6913,17 @@
                 if (!camera.isDragging) return;
                 const dx = e.clientX - camera.lastPointerX;
                 const dy = e.clientY - camera.lastPointerY;
-                if (Math.hypot(e.clientX - camera.dragStartX, e.clientY - camera.dragStartY) > 6) {
-                    camera.hasMoved = true;
-                }
+                if (Math.hypot(e.clientX - camera.dragStartX, e.clientY - camera.dragStartY) > 6) camera.hasMoved = true;
                 camera.lastPointerX = e.clientX;
                 camera.lastPointerY = e.clientY;
                 const panScale = is3DView ? 1.35 / Math.max(0.4, camera.zoom) : 1.0 / Math.max(0.3, camera.zoom);
-                // Invert drag delta so shifting the map tracks the pointer naturally in both 3D ISO and 2D plan views.
-                camera.x += dx * panScale;
-                camera.y += dy * panScale;
+                camera.x -= dx * panScale;
+                camera.y -= dy * panScale;
                 clampCameraToWorld();
             });
 
             window.addEventListener('pointerup', (e) => {
-                if (fpvCam.isDraggingLook) {
-                    fpvCam.isDraggingLook = false;
-                    return;
-                }
+                if (fpvCam.isDraggingLook) { fpvCam.isDraggingLook = false; return; }
                 if (!camera.isDragging) return;
                 const wasClick = !camera.hasMoved;
                 camera.isDragging = false;
@@ -6538,15 +6954,13 @@
                         nutrients.push({
                             x: clampWorldCoordinate(worldPt.x + (Math.random() - 0.5) * 38),
                             y: clampWorldCoordinate(worldPt.y + (Math.random() - 0.5) * 38),
-                            size: 6,
-                            energy: 50,
-                            kind: 'fruit'
+                            size: 6, energy: 50, kind: 'fruit'
                         });
                     }
                     rebuildThreeEntities();
                     showToast('Dropped Orchard Fruit');
                 } else if (clickMode === 'spawn') {
-                    const spKey = document.getElementById('spawnSpeciesSelect')?.value || 'capybara';
+                    const spKey = document.getElementById('spawnSpeciesSelect')?.value || 'human';
                     const org = new Organism(worldPt.x, worldPt.y, spKey, 1);
                     creatures.push(org);
                     selectedCreature = org;
@@ -6603,6 +7017,7 @@
                 }
                 else if (e.key === 'f' || e.key === 'F') handleAction('follow');
                 else if (e.key === 'v' || e.key === 'V') handleAction('fpv');
+                else if (e.key === 'r' || e.key === 'R') handleAction('spark-revolution');
                 else if (e.key === 'm' || e.key === 'M') audioEngine.toggle();
                 else if (e.key === '?') handleAction('shortcuts');
                 else if (e.key === 'Tab') {
@@ -6615,16 +7030,12 @@
                 }
             });
 
-            window.addEventListener('keyup', (e) => {
-                fpvCam.keysDown.delete(e.key);
-            });
+            window.addEventListener('keyup', (e) => { fpvCam.keysDown.delete(e.key); });
 
             function resizeCanvases() {
                 simCanvas.width = window.innerWidth;
                 simCanvas.height = window.innerHeight;
-                if (threeState.renderer) {
-                    threeState.renderer.setSize(window.innerWidth, window.innerHeight, false);
-                }
+                if (threeState.renderer) threeState.renderer.setSize(window.innerWidth, window.innerHeight, false);
             }
             window.addEventListener('resize', resizeCanvases);
 
@@ -6707,9 +7118,7 @@
 
                 if (!isPaused) {
                     const steps = Math.max(1, Math.min(5, speedMultiplier));
-                    for (let s = 0; s < steps; s++) {
-                        stepSimulation(rawDt);
-                    }
+                    for (let s = 0; s < steps; s++) stepSimulation(rawDt);
                 }
 
                 syncThreeFrame();
