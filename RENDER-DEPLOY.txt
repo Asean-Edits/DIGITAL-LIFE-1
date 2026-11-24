@@ -1,0 +1,11 @@
+Render Static Site settings
+- Root Directory: leave blank (repository root)
+- Build Command: npm install && npm run build
+- Publish Directory: .
+
+The build compiles Tailwind locally to tailwind.css, removing the Tailwind CDN production warning.
+The favicon.svg file resolves the /favicon.ico fallback request when the browser uses the declared SVG icon.
+The Neataptic CDN is loaded once, immediately before script.js.
+
+The Chrome asynchronous listener/message-channel error should be tested in Incognito with extensions disabled. If it persists, inspect the stack trace; do not suppress it blindly.
+The requestAnimationFrame violation is a performance warning, not a missing-resource or syntax error. It requires profiling/optimization of the simulation loop and is not fixed by static hosting configuration.
