@@ -5118,6 +5118,11 @@
                         document.getElementById('telemetryCard').classList.toggle('hidden');
                         drawTelemetryChart();
                         break;
+                    case 'applications': {
+                        const panel = document.getElementById('applicationsModal');
+                        panel?.classList.toggle('hidden');
+                        break;
+                    }
                     case 'params':
                         document.getElementById('paramsCard').classList.toggle('hidden');
                         break;

@@ -269,6 +269,10 @@
                     class="px-2 py-1.5 rounded-lg hover:bg-cyan-500/15 text-cyan-200 text-xs font-medium transition">
                     <span>Telemetry</span>
                 </button>
+                <button data-action="applications" title="Practical real-world applications of this simulation"
+                    class="px-2 py-1.5 rounded-lg hover:bg-emerald-500/15 text-emerald-200 text-xs font-semibold transition">
+                    <span>Applications</span>
+                </button>
                 <button data-action="params"
                     class="px-2 py-1.5 rounded-lg hover:bg-slate-800/80 text-slate-200 text-xs font-medium transition">
                     <span>Lab</span>
@@ -1111,6 +1115,72 @@
             </div>
         </div>
     </div>
+
+    <!-- PRACTICAL REAL-WORLD APPLICATIONS PANEL -->
+    <section id="applicationsModal" class="hidden fixed inset-0 z-[80] bg-slate-950/80 backdrop-blur-sm p-3 sm:p-6 overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="applicationsTitle">
+        <div class="max-w-5xl mx-auto my-3 sm:my-8 hud-glass rounded-2xl border border-emerald-400/30 shadow-2xl overflow-hidden">
+            <header class="sticky top-0 z-10 bg-slate-950/95 border-b border-slate-700/80 p-4 sm:p-5 flex items-start justify-between gap-4">
+                <div>
+                    <div class="text-[10px] uppercase tracking-[0.22em] text-emerald-300 font-mono">Beyond the simulation</div>
+                    <h2 id="applicationsTitle" class="text-lg sm:text-2xl font-bold text-white mt-1">Practical Applications of Digital Life</h2>
+                    <p class="text-xs sm:text-sm text-slate-400 mt-1">Explore how artificial-life experiments can inform real-world questions.</p>
+                </div>
+                <button data-action="applications" aria-label="Close applications" class="shrink-0 rounded-lg px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-white">✕</button>
+            </header>
+            <div class="p-4 sm:p-5 space-y-5">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    <article class="rounded-xl border border-emerald-400/25 bg-emerald-500/5 p-4">
+                        <div class="text-2xl mb-2">🌿</div><h3 class="font-bold text-emerald-200 text-sm">Wildlife conservation</h3>
+                        <p class="text-xs text-slate-300 mt-2 leading-relaxed">Explore how habitat, food availability and predator-prey relationships can affect population stability. Useful as a teaching sandbox for conservation concepts.</p>
+                        <p class="text-[10px] text-slate-400 mt-3"><b>Try it:</b> Observe a species, introduce a predator, then compare population and lineage telemetry.</p>
+                    </article>
+                    <article class="rounded-xl border border-lime-400/25 bg-lime-500/5 p-4">
+                        <div class="text-2xl mb-2">🌾</div><h3 class="font-bold text-lime-200 text-sm">Agriculture & pollination</h3>
+                        <p class="text-xs text-slate-300 mt-2 leading-relaxed">Demonstrate why pollinators, plant resources and habitat diversity matter to resilient agricultural ecosystems.</p>
+                        <p class="text-[10px] text-slate-400 mt-3"><b>Try it:</b> Spawn honeybees or hummingbirds and observe their movement around resource-rich areas.</p>
+                    </article>
+                    <article class="rounded-xl border border-sky-400/25 bg-sky-500/5 p-4">
+                        <div class="text-2xl mb-2">💧</div><h3 class="font-bold text-sky-200 text-sm">Water & habitat planning</h3>
+                        <p class="text-xs text-slate-300 mt-2 leading-relaxed">Use the world as a visual aid to discuss how water access, terrain and separated habitats influence where organisms can survive.</p>
+                        <p class="text-[10px] text-slate-400 mt-3"><b>Try it:</b> Compare organism activity across islands and inspect sensor and survival indicators.</p>
+                    </article>
+                    <article class="rounded-xl border border-amber-400/25 bg-amber-500/5 p-4">
+                        <div class="text-2xl mb-2">🧬</div><h3 class="font-bold text-amber-200 text-sm">Evolution & biodiversity education</h3>
+                        <p class="text-xs text-slate-300 mt-2 leading-relaxed">Teach adaptation, inheritance, selection, niches and biodiversity through observable artificial populations.</p>
+                        <p class="text-[10px] text-slate-400 mt-3"><b>Try it:</b> Follow a lineage, compare generations and inspect changes in organism traits.</p>
+                    </article>
+                    <article class="rounded-xl border border-violet-400/25 bg-violet-500/5 p-4">
+                        <div class="text-2xl mb-2">🤖</div><h3 class="font-bold text-violet-200 text-sm">AI & autonomous robotics research</h3>
+                        <p class="text-xs text-slate-300 mt-2 leading-relaxed">Illustrate sensor-driven decisions, goal selection, reward and punishment, and how simple agents adapt to changing environments.</p>
+                        <p class="text-[10px] text-slate-400 mt-3"><b>Try it:</b> Inspect an organism's ANN, assign goals where supported, and compare its behaviour.</p>
+                    </article>
+                    <article class="rounded-xl border border-rose-400/25 bg-rose-500/5 p-4">
+                        <div class="text-2xl mb-2">🌍</div><h3 class="font-bold text-rose-200 text-sm">Ecosystem resilience & restoration</h3>
+                        <p class="text-xs text-slate-300 mt-2 leading-relaxed">Discuss disturbances, recovery, resource pressure and the role of species diversity in ecosystem resilience.</p>
+                        <p class="text-[10px] text-slate-400 mt-3"><b>Try it:</b> Record a checkpoint, change conditions or populations, and compare the resulting telemetry.</p>
+                    </article>
+                </div>
+                <div class="rounded-xl border border-cyan-400/25 bg-cyan-500/5 p-4">
+                    <h3 class="text-sm font-bold text-cyan-200">A practical classroom or project workflow</h3>
+                    <ol class="list-decimal list-inside text-xs text-slate-300 mt-2 space-y-1.5 leading-relaxed">
+                        <li>Choose a question, such as how predator numbers affect prey populations.</li>
+                        <li>Record a baseline using the telemetry and checkpoint tools.</li>
+                        <li>Change one factor at a time using the simulation controls.</li>
+                        <li>Observe population, behaviour and lineage changes over several runs.</li>
+                        <li>Export the available telemetry and explain the limits of the experiment.</li>
+                    </ol>
+                </div>
+                <div class="rounded-xl border border-amber-400/30 bg-amber-500/10 p-4">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-amber-200">Scientific limitation</h3>
+                    <p class="text-xs text-slate-300 mt-1 leading-relaxed">Digital Life is an educational artificial-life simulation, not a validated ecological forecasting, agricultural decision-support, medical or conservation-planning system. Its rules and parameters are simplified. Real-world decisions require field data, domain-specific models, expert review and validation.</p>
+                </div>
+            </div>
+            <footer class="border-t border-slate-700/80 p-3 flex justify-end">
+                <button data-action="applications" class="px-4 py-2 rounded-lg bg-emerald-500/20 border border-emerald-400/40 text-emerald-200 text-xs font-semibold hover:bg-emerald-500/30">Back to simulation</button>
+            </footer>
+        </div>
+    </section>
+
     <script src="three.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/neataptic/1.4.7/neataptic.min.js"></script>
     <script src="script.js"></script>
