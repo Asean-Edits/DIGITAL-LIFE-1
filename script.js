@@ -352,6 +352,8 @@
             let springs = [];
             const telemetryHistory = [];
             const eventMarkers = [];
+            let researchBaseline = null;
+            let researchObservations = [];
 
             // =========================================================================
             // SECTION 2: TERRAIN, CHRONICLE & NEURAL BRAIN ARCHITECTURE
@@ -1835,6 +1837,8 @@
 
             function exitFpvMode(silent = false) {
                 isFpvMode = false;
+                document.body.classList.remove('fpv-clean-view');
+                document.getElementById('fpvRestoreUiButton')?.classList.add('hidden');
                 fpvCam.active = false;
                 fpvCam.isDraggingLook = false;
                 fpvCam.yawOffset = 0;
@@ -4963,6 +4967,64 @@
                 document.getElementById('hudZoom').textContent = `${Math.round(camera.zoom * 100)}%`;
             }
 
+            function collectResearchMetrics() {
+                let land = 0, ocean = 0, sky = 0, energy = 0, hydration = 0;
+                const species = new Set();
+                for (const c of creatures) {
+                    const affinity = c.genome?.sphereAffinity;
+                    if (affinity === 'ATMOSPHERE') sky++; else if (affinity === 'OCEAN') ocean++; else land++;
+                    energy += Number(c.energy) || 0;
+                    hydration += Number(c.hydration) || 0;
+                    if (c.genome?.id) species.add(c.genome.id);
+                }
+                const n = Math.max(1, creatures.length);
+                return {
+                    timestamp: new Date().toISOString(), tick: simTick, population: creatures.length,
+                    land, ocean, sky, speciesCount: species.size,
+                    averageEnergy: Math.round(energy / n * 10) / 10,
+                    averageHydration: Math.round(hydration / n * 10) / 10,
+                    era: EARTH_ERAS[currentEraIndex]?.name || 'Unknown', weather: currentWeather,
+                    temperatureShift: params.tempShift, foodRate: params.foodRate,
+                    mutationRate: params.mutationRate, burnRate: params.burnRate,
+                    condition: document.getElementById('researchCondition')?.value || 'Unspecified'
+                };
+            }
+
+            function renderResearchPanel() {
+                const m = collectResearchMetrics();
+                const set = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = value; };
+                set('researchPopulation', String(m.population));
+                set('researchHabitats', `${m.land} / ${m.ocean} / ${m.sky}`);
+                set('researchEnergy', String(m.averageEnergy));
+                set('researchHydration', `${m.averageHydration}%`);
+                set('researchCount', `${researchObservations.length} records`);
+                const log = document.getElementById('researchLog');
+                if (log) {
+                    const rows = [];
+                    if (researchBaseline) rows.push({ ...researchBaseline, label: 'Baseline' });
+                    rows.push(...researchObservations);
+                    log.innerHTML = rows.length ? rows.slice().reverse().map((r, i) => `<div class="rounded-lg border border-slate-700 bg-slate-900/80 p-2"><div class="flex justify-between gap-2"><b class="text-cyan-200">${r.label || 'Observation'} · Tick ${r.tick}</b><span class="text-slate-500">${new Date(r.timestamp).toLocaleTimeString()}</span></div><div class="mt-1 text-slate-300">${r.condition} · Population ${r.population} · Land/Ocean/Sky ${r.land}/${r.ocean}/${r.sky} · Species IDs ${r.speciesCount}</div></div>`).join('') : '<p class="text-slate-500">Capture a baseline to begin your experiment.</p>';
+                }
+            }
+
+            function exportResearchReport() {
+                if (!researchBaseline && !researchObservations.length) { showToast('Capture a baseline or observation first'); return; }
+                const report = {
+                    project: 'Digital Life Research Mode',
+                    question: document.getElementById('researchQuestion')?.value || '',
+                    exportedAt: new Date().toISOString(),
+                    methodology: 'Artificial-life simulation observations; change one condition at a time and repeat trials.',
+                    baseline: researchBaseline,
+                    observations: researchObservations,
+                    scientificLimit: 'Not a validated real-world ecological prediction model.'
+                };
+                const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a'); a.href = url; a.download = `digital-life-research-tick-${simTick}.json`; a.click();
+                setTimeout(() => URL.revokeObjectURL(url), 1000);
+                showToast('Research report exported');
+            }
+
             function handleAction(action) {
                 switch (action) {
                     case 'pause':
@@ -5123,6 +5185,42 @@
                         panel?.classList.toggle('hidden');
                         break;
                     }
+                    case 'research': {
+                        const panel = document.getElementById('researchModal');
+                        panel?.classList.toggle('hidden');
+                        if (panel && !panel.classList.contains('hidden')) renderResearchPanel();
+                        break;
+                    }
+                    case 'research-baseline':
+                        researchBaseline = { ...collectResearchMetrics(), label: 'Baseline' };
+                        researchObservations = [];
+                        renderResearchPanel();
+                        showToast('Research baseline captured');
+                        break;
+                    case 'research-record':
+                        researchObservations.push({ ...collectResearchMetrics(), label: 'Observation ' + (researchObservations.length + 1) });
+                        renderResearchPanel();
+                        showToast('Research observation recorded');
+                        break;
+                    case 'research-export':
+                        exportResearchReport();
+                        break;
+                    case 'research-reset':
+                        researchBaseline = null;
+                        researchObservations = [];
+                        renderResearchPanel();
+                        showToast('Experiment log cleared');
+                        break;
+                    case 'fpv-hide-ui':
+                        if (isFpvMode) {
+                            document.body.classList.add('fpv-clean-view');
+                            document.getElementById('fpvRestoreUiButton')?.classList.remove('hidden');
+                        }
+                        break;
+                    case 'fpv-show-ui':
+                        document.body.classList.remove('fpv-clean-view');
+                        document.getElementById('fpvRestoreUiButton')?.classList.add('hidden');
+                        break;
                     case 'params':
                         document.getElementById('paramsCard').classList.toggle('hidden');
                         break;

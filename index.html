@@ -21,6 +21,8 @@
     <!-- 3D THREE.JS VOXEL ARCHIPELAGO & 2D TELEMETRY OVERLAY -->
     <canvas id="world3dCanvas" class="fixed inset-0 w-full h-full block z-0 pointer-events-none"></canvas>
     <canvas id="simCanvas" class="fixed inset-0 w-full h-full block cursor-grab active:cursor-grabbing z-10"></canvas>
+    <button id="fpvRestoreUiButton" data-action="fpv-show-ui" aria-label="Show interface controls" title="Show interface controls"
+        class="hidden fixed top-4 right-4 z-[120] w-11 h-11 rounded-full border border-cyan-300/60 bg-slate-950/85 text-cyan-100 text-2xl shadow-2xl hover:bg-cyan-900/80">×</button>
 
     <!-- HOVER OBJECT INSPECTOR TOOLTIP -->
     <div id="hoverTooltip"
@@ -53,7 +55,9 @@
                     &rsaquo;</button>
                 <button id="btnFpvRecenter" data-action="fpv-recenter" title="Re-center Gaze (R)"
                     class="px-2 py-0.5 rounded-full bg-cyan-500/20 hover:bg-cyan-500/35 text-cyan-200 border border-cyan-400/35 text-[10px] sm:text-[11px] font-mono transition">Center</button>
-                <button data-action="fpv"
+                <button data-action="fpv-hide-ui" title="Hide all interface controls for an unobstructed FPV view"
+                    class="px-2.5 py-0.5 rounded-full bg-cyan-500/20 hover:bg-cyan-500/35 text-cyan-100 border border-cyan-400/40 text-[10px] sm:text-[11px] font-mono transition">Hide UI</button>
+                <button data-action="fpv" aria-label="Exit FPV mode"
                     class="px-2.5 py-0.5 rounded-full bg-amber-500/25 hover:bg-amber-500/40 text-amber-100 border border-amber-400/40 text-[10px] sm:text-[11px] font-mono transition">Exit</button>
             </div>
         </div>
@@ -268,6 +272,10 @@
                 <button data-action="charts"
                     class="px-2 py-1.5 rounded-lg hover:bg-cyan-500/15 text-cyan-200 text-xs font-medium transition">
                     <span>Telemetry</span>
+                </button>
+                <button data-action="research" title="Run repeatable experiments and export research reports"
+                    class="px-2 py-1.5 rounded-lg hover:bg-cyan-500/15 text-cyan-200 text-xs font-semibold transition">
+                    <span>Research</span>
                 </button>
                 <button data-action="applications" title="Practical real-world applications of this simulation"
                     class="px-2 py-1.5 rounded-lg hover:bg-emerald-500/15 text-emerald-200 text-xs font-semibold transition">
@@ -1115,6 +1123,47 @@
             </div>
         </div>
     </div>
+
+
+    <!-- RESEARCH MODE: REPEATABLE EXPERIMENTS AND REPORTING -->
+    <section id="researchModal" class="hidden fixed inset-0 z-[85] bg-slate-950/85 backdrop-blur-sm p-3 sm:p-6 overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="researchTitle">
+      <div class="max-w-4xl mx-auto my-3 sm:my-8 hud-glass rounded-2xl border border-cyan-400/30 shadow-2xl overflow-hidden">
+        <header class="sticky top-0 z-10 bg-slate-950/95 border-b border-slate-700 p-4 flex justify-between gap-3">
+          <div><div class="text-[10px] uppercase tracking-[.2em] text-cyan-300 font-mono">Scientific workspace</div><h2 id="researchTitle" class="text-xl font-bold text-white">Research Mode</h2><p class="text-xs text-slate-400 mt-1">Capture a baseline, change one condition, record observations and export a report.</p></div>
+          <button data-action="research" aria-label="Close research mode" class="rounded-lg px-3 py-1.5 bg-slate-800 text-white self-start">✕</button>
+        </header>
+        <div class="p-4 sm:p-5 space-y-4">
+          <div class="grid sm:grid-cols-2 gap-3">
+            <label class="text-xs text-slate-300">Research question
+              <textarea id="researchQuestion" rows="3" class="mt-1 w-full rounded-lg bg-slate-950 border border-slate-700 p-2 text-sm text-white" placeholder="Example: How does a heatwave affect the population distribution?"></textarea>
+            </label>
+            <label class="text-xs text-slate-300">Experiment condition / treatment
+              <select id="researchCondition" class="mt-1 w-full rounded-lg bg-slate-950 border border-slate-700 p-2 text-sm text-white">
+                <option value="Baseline / control">Baseline / control</option><option>Heatwave / drought</option><option>Cold / ice age</option><option>High food availability</option><option>Predator pressure</option><option>Habitat disturbance</option><option>Custom condition</option>
+              </select>
+              <p class="text-[10px] text-slate-500 mt-2">Apply the chosen condition using the existing simulation controls. Research Mode records the state; it does not silently change world settings.</p>
+            </label>
+          </div>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-2" id="researchMetrics">
+            <div class="rounded-lg bg-slate-900 p-3"><div class="text-[10px] text-slate-400">Organisms</div><strong id="researchPopulation" class="text-xl text-white">—</strong></div>
+            <div class="rounded-lg bg-slate-900 p-3"><div class="text-[10px] text-slate-400">Land / Ocean / Sky</div><strong id="researchHabitats" class="text-sm text-white">—</strong></div>
+            <div class="rounded-lg bg-slate-900 p-3"><div class="text-[10px] text-slate-400">Avg. energy</div><strong id="researchEnergy" class="text-xl text-white">—</strong></div>
+            <div class="rounded-lg bg-slate-900 p-3"><div class="text-[10px] text-slate-400">Avg. hydration</div><strong id="researchHydration" class="text-xl text-white">—</strong></div>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <button data-action="research-baseline" class="rounded-lg px-3 py-2 bg-cyan-500/20 border border-cyan-400/40 text-cyan-100 text-xs font-semibold">Capture baseline</button>
+            <button data-action="research-record" class="rounded-lg px-3 py-2 bg-emerald-500/20 border border-emerald-400/40 text-emerald-100 text-xs font-semibold">Record observation</button>
+            <button data-action="research-export" class="rounded-lg px-3 py-2 bg-violet-500/20 border border-violet-400/40 text-violet-100 text-xs font-semibold">Export research report</button>
+            <button data-action="research-reset" class="rounded-lg px-3 py-2 bg-slate-800 border border-slate-600 text-slate-200 text-xs">Clear experiment</button>
+          </div>
+          <div class="rounded-xl border border-slate-700 bg-slate-950/70 p-3">
+            <div class="flex justify-between items-center gap-2"><h3 class="text-sm font-bold text-white">Observation log</h3><span id="researchCount" class="text-[10px] font-mono text-cyan-300">0 records</span></div>
+            <div id="researchLog" class="mt-2 space-y-2 text-xs text-slate-300"><p class="text-slate-500">Capture a baseline to begin your experiment.</p></div>
+          </div>
+          <div class="rounded-lg border border-amber-400/30 bg-amber-500/5 p-3 text-[11px] text-amber-100/90">Research integrity: use the same starting conditions for repeat trials, change one variable at a time, record simulation tick and settings, and repeat trials. These results describe this artificial-life model; they are not validated predictions about real ecosystems.</div>
+        </div>
+      </div>
+    </section>
 
     <!-- PRACTICAL REAL-WORLD APPLICATIONS PANEL -->
     <section id="applicationsModal" class="hidden fixed inset-0 z-[80] bg-slate-950/80 backdrop-blur-sm p-3 sm:p-6 overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="applicationsTitle">

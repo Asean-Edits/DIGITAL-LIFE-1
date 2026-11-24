@@ -1,0 +1,16 @@
+DIGITAL LIFE UPDATE
+
+New features
+1. Research Mode button in the top interface.
+2. Research Mode captures a baseline and repeated observations, including tick, population, land/ocean/sky counts, distinct genome IDs, average energy/hydration, era, weather, and active simulation parameter values.
+3. Research report export downloads a JSON file containing the research question, baseline, observations, and scientific limitation note.
+4. FPV mode now includes a Hide UI button. It hides interface overlays while keeping both world canvases visible. A floating X button restores the interface. Exiting FPV also restores the interface automatically.
+
+Deployment
+- Keep the Render Static Site Build Command: npm install && npm run build
+- Publish Directory: .
+- Upload the contents of this folder to the repository root.
+- Research Mode stores observations in memory for the current browser session; export the JSON report before refreshing or closing the page.
+
+Research interpretation
+This records measurements from the artificial-life simulation. It does not automatically manipulate world parameters and is not a validated ecological forecasting tool. Change conditions with existing simulation controls, record observations, and repeat trials with comparable starting conditions.
