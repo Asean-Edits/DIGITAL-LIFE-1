@@ -5842,3 +5842,25 @@
             updateHUD();
             requestAnimationFrame(mainLoop);
         })();
+// Species-specific underwater dive depth (negative Y in Three.js world units)
+const OCEAN_DIVE_DEPTH = {
+    whale: -16.5,
+    nautilus: -15.0,
+    octopus: -13.8,
+    mantaray: -10.5,
+    seaturtle: -8.5,
+    dolphin: -7.2,
+    clownfish: -5.5,
+    moonjelly: -6.8,
+    seaotter: -4.2
+};
+
+function getOceanDiveY(creature, wt) {
+    const waveH = computeOceanWaveHeight(creature.x, creature.y, wt, currentWeather);
+    const baseDepth = OCEAN_DIVE_DEPTH[creature.species] ?? -8.0;
+    const diveWave = Math.sin((creature.walkPhase || 0) * 0.45 + (creature.id || 0)) * 2.4;
+    const surfaceY = -12.5 + waveH;
+    // Keep creatures submerged below the ocean surface while staying above seafloor/island elevation
+    const gy = typeof getWorldElevation === 'function' ? terraceHeightY(getWorldElevation(creature.x, creature.y)) : -24;
+    return Math.max(gy + 1.5, Math.min(surfaceY - 1.6, surfaceY + baseDepth + diveWave));
+}
