@@ -1,3 +1,994 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+<!DOCTYPE html>
+<html lang="en" class="dark">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Digital Life — 3D Planetary Biosphere &amp; ANN Evolution Laboratory</title>
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="./tailwind.css" />
+    <link rel="stylesheet" href="./style.css" />
+</head>
+
+<body class="text-slate-100 overflow-hidden select-none">
+
+    <!-- Dual Layered Canvases (3D World + 2D HUD/Sensory/FPV Overlay) -->
+    <canvas id="world3dCanvas" class="fixed inset-0 w-full h-full"></canvas>
+    <canvas id="simCanvas" class="fixed inset-0 w-full h-full"></canvas>
+
+    <!-- Floating FPV Restore UI Button -->
+    <button id="fpvRestoreUiButton" data-action="fpv-show-ui" title="Restore Interface"
+        class="hidden fixed top-4 right-4 z-50 w-10 h-10 rounded-full bg-slate-950/90 border border-teal-400/60 text-teal-200 hover:text-white hover:bg-teal-500/30 font-mono text-base font-bold shadow-xl">
+        &#10005;
+    </button>
+
+    <!-- Hover Entity Tooltip -->
+    <div id="hoverTooltip" class="hidden fixed z-40 pointer-events-none hud-glass px-3 py-2 max-w-[250px] text-xs">
+        <div class="flex items-center justify-between gap-2">
+            <span id="hoverTitle" class="font-bold text-white truncate">Entity</span>
+            <span id="hoverBadge"
+                class="font-mono text-[9px] px-1.5 py-0.5 rounded bg-teal-500/20 text-teal-300 border border-teal-400/40 shrink-0">TYPE</span>
+        </div>
+        <div id="hoverSub" class="text-[11px] text-slate-300 mt-0.5">Role &amp; State</div>
+        <div id="hoverMeta" class="font-mono text-[10px] text-teal-300/90 mt-0.5">Telemetry</div>
+    </div>
+
+    <!-- Toast Banner -->
+    <div id="simToast" style="opacity:0"
+        class="fixed top-4 left-1/2 -translate-x-1/2 z-40 pointer-events-none hud-glass px-4 py-1.5 text-xs font-mono text-teal-200 border border-teal-400/50 transition-opacity duration-300">
+        Digital Life Initialized
+    </div>
+
+    <!-- FPV Top Banner & Bottom Telemetry Strip -->
+    <div id="fpvBanner"
+        class="hidden fixed top-3 left-1/2 -translate-x-1/2 z-30 hud-glass px-3.5 py-1.5 flex items-center gap-2.5 text-xs font-mono">
+        <span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span>
+        <span id="fpvBannerText" class="text-amber-200 font-semibold">FPV Active</span>
+        <span id="fpvSphereBadge"
+            class="px-1.5 py-0.5 rounded bg-teal-500/20 text-teal-300 text-[10px] border border-teal-400/40">LITHOSPHERE</span>
+        <button data-action="fpv-prev"
+            class="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-200">&larr;</button>
+        <button data-action="fpv-next"
+            class="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-200">&rarr;</button>
+        <button data-action="fpv-recenter"
+            class="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-cyan-200">Center</button>
+        <button data-action="fpv-hide-ui"
+            class="px-2 py-0.5 rounded bg-amber-500/20 hover:bg-amber-500/35 text-amber-200 border border-amber-400/40">Hide
+            UI</button>
+        <button data-action="fpv"
+            class="px-2 py-0.5 rounded bg-rose-500/25 hover:bg-rose-500/40 text-rose-200 border border-rose-400/40">Exit
+            FPV</button>
+    </div>
+
+    <div id="fpvHudStack" class="hidden fixed bottom-16 left-1/2 -translate-x-1/2 z-30">
+        <div id="fpvTelemetryStrip"
+            class="hud-glass px-3.5 py-2 flex flex-wrap items-center gap-3 text-[11px] font-mono">
+            <span id="fpvStatePill"
+                class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 font-semibold">FORAGING</span>
+            <span id="fpvVitalsMetric" class="text-slate-200">NRG 100% &bull; HYD 100% &bull; STR 8%</span>
+            <span id="fpvKinematicsMetric" class="text-cyan-300">SPD 2.0 &bull; HDG 000&deg;</span>
+            <span id="fpvGazeMetric" class="text-amber-200">GAZE 0&deg;</span>
+        </div>
+    </div>
+
+    <!-- TOP-LEFT HUD: Biosphere Telemetry, Era Stepper & Chronicle -->
+    <aside id="topLeftHud" class="fixed top-3 left-3 z-20 flex flex-col gap-2.5 max-w-[440px] pointer-events-none">
+        <div class="hud-glass px-3.5 py-2.5 flex items-center justify-between gap-3 pointer-events-auto">
+            <div class="min-w-0">
+                <div class="flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-teal-400 shadow-[0_0_10px_#2dd4bf]"></span>
+                    <h1 class="text-sm font-bold tracking-wider uppercase text-white">Digital Life</h1>
+                    <span id="hudViewMode"
+                        class="font-mono text-[10px] px-1.5 py-0.5 rounded bg-teal-500/20 text-teal-300 border border-teal-400/40">3D
+                        ISO</span>
+                </div>
+                <p class="text-[10px] text-slate-400 truncate mt-0.5">7-Island Voxel Biosphere &amp; Neataptic ANN Lab
+                </p>
+            </div>
+            <div class="font-mono text-[10px] flex flex-wrap items-center gap-x-3 gap-y-1 text-slate-300">
+                <span>Pop: <b id="hudPop" class="text-teal-300">0</b></span>
+                <span>Spheres: <b id="hudSpheresCount" class="text-sky-300">A:0 O:0 L:0</b></span>
+                <span>Leaders: <b id="hudLeaderCount" class="text-amber-300">0/0</b></span>
+                <span>Colonies: <b id="hudColoniesCount" class="text-emerald-300">0</b></span>
+                <span>Builds: <b id="hudStructuresCount" class="text-amber-200">0</b></span>
+                <span>Human ANN: <b id="hudHumanStage" class="text-yellow-300">0/4</b></span>
+                <span>Regime: <b id="hudRevolutionBadge" class="text-orange-300">Pre-Fire</b></span>
+                <span>Tasks: <b id="hudTasksCount" class="text-cyan-300">0</b></span>
+                <span>Soil/Tide: <b id="hudTideSeason" class="text-emerald-200">100%</b></span>
+                <span>Clock: <b id="hudWeatherClock" class="text-slate-100">11:30 &bull; Clear</b></span>
+                <span>Zoom: <b id="hudZoom" class="text-teal-200">85%</b></span>
+            </div>
+        </div>
+
+        <!-- Geological Era & Civilization Progression Card -->
+        <div id="eraStepperCard" class="hud-glass hud-card-accent p-3 pointer-events-auto">
+            <div class="flex items-center justify-between gap-2">
+                <div class="min-w-0">
+                    <div class="flex items-center gap-1.5">
+                        <span id="eraYearBadge"
+                            class="font-mono text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-400/40">4.6-4.0
+                            BYA</span>
+                        <h2 id="eraTitleBadge" class="text-xs font-bold text-white truncate">Hadean Caldera Isle</h2>
+                    </div>
+                    <p id="eraSubtitle" class="text-[11px] text-slate-300 mt-1 leading-snug">Volcanic basalt caldera
+                        &amp; early extremophiles</p>
+                </div>
+                <button data-action="event"
+                    class="px-2.5 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/35 text-amber-200 border border-amber-400/40 font-mono text-[10px] shrink-0">
+                    Trigger Event
+                </button>
+            </div>
+
+            <div class="w-full h-1 bg-slate-800 rounded-full overflow-hidden mt-2">
+                <div id="eraProgressBar" class="h-full bg-gradient-to-r from-teal-400 to-sky-400" style="width:0%">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-7 gap-1 mt-2 font-mono text-[9px]">
+                <button id="eraBtn0" data-era="0">1.Had</button>
+                <button id="eraBtn1" data-era="1">2.Arc</button>
+                <button id="eraBtn2" data-era="2">3.Pro</button>
+                <button id="eraBtn3" data-era="3">4.Cam</button>
+                <button id="eraBtn4" data-era="4">5.Car</button>
+                <button id="eraBtn5" data-era="5">6.Cre</button>
+                <button id="eraBtn6" data-era="6">7.Bio</button>
+            </div>
+
+            <div class="flex items-center justify-between mt-2 pt-2 border-t border-slate-800/80 text-[10px] font-mono">
+                <span id="historicalEventLabel" class="text-amber-300/90">Trigger: Volcanic Surge</span>
+                <label class="flex items-center gap-1.5 text-slate-300 cursor-pointer">
+                    <input id="toggleAutoEra" type="checkbox" checked />
+                    <span>Auto-Advance</span>
+                </label>
+            </div>
+
+            <div class="mt-2 pt-2 border-t border-slate-800/80">
+                <div class="flex items-center justify-between text-[10px] font-mono">
+                    <span id="cultureStageTitle" class="text-cyan-300 font-semibold">Stage 0: Foraging Instincts</span>
+                    <span id="cultureXpText" class="text-slate-300">0 XP</span>
+                </div>
+                <div class="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden mt-1">
+                    <div id="cultureXpBar" class="h-full bg-gradient-to-r from-cyan-400 to-amber-300" style="width:0%">
+                    </div>
+                </div>
+                <div id="shelterBreakdownText" class="font-mono text-[9px] text-slate-400 mt-1">Shelters: Camp 0 &bull;
+                    Tower 0 &bull; Granary 0 &bull; Beacon 0</div>
+            </div>
+        </div>
+
+        <!-- Living Chronicle Feed -->
+        <div id="chronicleCard" class="hud-glass p-3 pointer-events-auto">
+            <div class="flex items-center justify-between mb-1.5">
+                <span class="text-[11px] font-bold uppercase tracking-wider text-teal-300">Biosphere Chronicle</span>
+                <span id="chronicleTickBadge" class="font-mono text-[10px] text-slate-400">Tick 0</span>
+            </div>
+            <ul id="chronicleList"
+                class="hud-scroll max-h-24 overflow-y-auto space-y-1 font-mono text-[10px] text-slate-300">
+                <li class="text-teal-300">[0] Archipelago seeded with 25 species &amp; Human ANN pioneers.</li>
+            </ul>
+        </div>
+    </aside>
+
+    <!-- TOP-RIGHT HUD: Action Bar & Sliding Drawers -->
+    <aside id="topRightHud"
+        class="fixed top-3 right-3 z-20 flex flex-col items-end gap-2.5 max-h-[calc(100vh-5.5rem)] pointer-events-none">
+        <div class="flex flex-wrap items-center justify-end gap-1.5 pointer-events-auto">
+            <button data-action="research"
+                class="hud-glass px-2.5 py-1.5 text-xs font-mono text-cyan-200 hover:text-white border border-cyan-400/40">Research
+                Mode</button>
+            <button data-action="scale-guide"
+                class="hud-glass px-2.5 py-1.5 text-xs font-mono text-teal-200 hover:text-white">World Scale</button>
+            <button data-action="interior-mode"
+                class="hud-glass px-2.5 py-1.5 text-xs font-mono text-amber-200 hover:text-white">House
+                Interior</button>
+            <button data-action="species-panel"
+                class="hud-glass px-2.5 py-1.5 text-xs font-mono text-emerald-200 hover:text-white">Species
+                (25)</button>
+            <button data-action="charts"
+                class="hud-glass px-2.5 py-1.5 text-xs font-mono text-sky-200 hover:text-white">Telemetry</button>
+            <button data-action="params"
+                class="hud-glass px-2.5 py-1.5 text-xs font-mono text-purple-200 hover:text-white">Environment</button>
+            <button data-action="lineage"
+                class="hud-glass px-2.5 py-1.5 text-xs font-mono text-pink-200 hover:text-white">Lineage</button>
+            <button data-action="challenges"
+                class="hud-glass px-2.5 py-1.5 text-xs font-mono text-yellow-200 hover:text-white">Goals</button>
+
+            <div class="relative">
+                <button data-action="toggle-more-menu"
+                    class="hud-glass px-2.5 py-1.5 text-xs font-mono text-slate-200 hover:text-white">More
+                    &#9662;</button>
+                <div id="moreMenuPopover"
+                    class="hidden absolute right-0 mt-1.5 w-52 hud-glass p-2 flex flex-col gap-1 font-mono text-[11px] z-30">
+                    <button data-action="inspect-human"
+                        class="text-left px-2.5 py-1.5 rounded-lg hover:bg-slate-800 text-amber-200">Inspect Human
+                        Commander</button>
+                    <button data-action="spark-revolution"
+                        class="text-left px-2.5 py-1.5 rounded-lg hover:bg-slate-800 text-rose-300">Spark Human
+                        Revolution (R)</button>
+                    <button data-action="train-all-humans"
+                        class="text-left px-2.5 py-1.5 rounded-lg hover:bg-slate-800 text-cyan-200">Train All Human
+                        ANNs</button>
+                    <button data-action="trigger-disaster"
+                        class="text-left px-2.5 py-1.5 rounded-lg hover:bg-slate-800 text-orange-300">Trigger Wildfire /
+                        Eruption</button>
+                    <button data-action="applications"
+                        class="text-left px-2.5 py-1.5 rounded-lg hover:bg-slate-800 text-teal-200">Scientific
+                        Applications</button>
+                    <button data-action="toggle-sensory"
+                        class="text-left px-2.5 py-1.5 rounded-lg hover:bg-slate-800 text-slate-200"><span
+                            id="hudSensoryLabel">Sensors: ON</span></button>
+                    <button data-action="exhibition"
+                        class="text-left px-2.5 py-1.5 rounded-lg hover:bg-slate-800 text-slate-200"><span
+                            id="hudExhibitionLabel">Exhibition: OFF</span></button>
+                    <button data-action="toggle-audio"
+                        class="text-left px-2.5 py-1.5 rounded-lg hover:bg-slate-800 text-slate-200"><span
+                            id="hudAudioLabel">Audio: OFF</span></button>
+                    <button data-action="shortcuts"
+                        class="text-left px-2.5 py-1.5 rounded-lg hover:bg-slate-800 text-slate-300">Keyboard Shortcuts
+                        (?)</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="rightDrawerStack"
+            class="hud-scroll flex flex-col gap-2.5 w-[22.5rem] max-w-full overflow-y-auto pr-0.5 pointer-events-auto">
+            <!-- Organism & Human ANN Inspector Card -->
+            <section id="inspectorCard" class="hidden hud-glass p-3.5 text-xs">
+                <div class="insp-head">
+                    <span id="dnaSpeciesDot" class="insp-dot"></span>
+                    <div class="insp-ident">
+                        <div class="insp-title-row">
+                            <h3 id="dnaSpeciesTitle" class="insp-title">Organism</h3>
+                            <span id="dnaLeaderBadge" class="hidden insp-leader">LEADER</span>
+                        </div>
+                        <span id="dnaDietBadge" class="insp-sub">LITHOSPHERE</span>
+                    </div>
+                    <span id="dnaIdBadge" class="insp-id">GEN-0000</span>
+                    <button data-action="inspect-prev" title="Previous Organism"
+                        class="insp-close text-sm">&lsaquo;</button>
+                    <button data-action="inspect-next" title="Next Organism"
+                        class="insp-close text-sm">&rsaquo;</button>
+                    <button data-action="deselect" title="Close Inspector" class="insp-close">&times;</button>
+                </div>
+
+                <div class="insp-body">
+                    <div class="insp-col">
+                        <div class="insp-card">
+                            <div class="insp-vital">
+                                <div class="insp-vital-top">
+                                    <span><span class="insp-k">Stage</span><span id="dnaLifeStage"
+                                            class="insp-stage">ADULT</span></span>
+                                    <span id="dnaAgeText" class="insp-muted">Age 0s &bull; 100%</span>
+                                </div>
+                                <div class="insp-bar">
+                                    <div id="dnaGrowthBar" class="h-full bg-teal-400" style="width:100%"></div>
+                                </div>
+                            </div>
+                            <div class="insp-vital">
+                                <div class="insp-vital-top">
+                                    <span class="insp-k">ATP Energy</span>
+                                    <span id="dnaEnergyText" class="insp-big">60%</span>
+                                </div>
+                                <div class="insp-bar">
+                                    <div id="dnaEnergyBar" class="h-full bg-emerald-400" style="width:60%"></div>
+                                </div>
+                            </div>
+                            <div class="insp-vital">
+                                <div class="insp-vital-top">
+                                    <span class="insp-k">Hydration</span>
+                                    <span id="dnaHydrationText" class="insp-big">100%</span>
+                                </div>
+                                <div class="insp-bar">
+                                    <div id="dnaHydrationBar" class="h-full bg-sky-400" style="width:100%"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="insp-actions">
+                            <button id="btnFollowBot" data-action="follow" aria-pressed="false"
+                                class="insp-btn insp-btn-follow"><span id="textFollowBot">Follow: OFF</span></button>
+                            <button id="btnFpvBot" data-action="fpv" aria-pressed="false"
+                                class="insp-btn insp-btn-fpv"><span id="textFpvBot">FPV: OFF</span></button>
+                            <button data-action="open-lab" class="insp-btn insp-btn-lab">Cryo-Lab</button>
+                            <button data-action="dna-speed" class="insp-btn insp-btn-speed">+Speed</button>
+                            <button data-action="dna-vision" class="insp-btn insp-btn-sensor">+Vision</button>
+                            <button data-action="dna-mutate" class="insp-btn insp-btn-mutate">Speciate</button>
+                        </div>
+
+                        <div class="insp-facts">
+                            <div class="insp-fact"><span class="insp-fact-k">Lineage</span><span id="dnaGen"
+                                    class="insp-fact-v text-white">Gen 1</span></div>
+                            <div class="insp-fact"><span class="insp-fact-k">Fitness</span><span id="dnaChildren"
+                                    class="insp-fact-v text-emerald-300">10.0</span></div>
+                            <div class="insp-fact"><span class="insp-fact-k">Sphere</span><span id="dnaSphereAffinity"
+                                    class="insp-fact-v text-cyan-300">LITH / V1</span></div>
+                            <div class="insp-fact"><span class="insp-fact-k">Speed</span><span id="dnaSpeed"
+                                    class="insp-fact-v text-sky-300">2.00</span></div>
+                            <div class="insp-fact"><span class="insp-fact-k">Vision</span><span id="dnaVision"
+                                    class="insp-fact-v text-purple-300">180 px</span></div>
+                            <div class="insp-fact"><span class="insp-fact-k">Stress / Res</span><span id="dnaStressRes"
+                                    class="insp-fact-v text-amber-200">8% / 50%</span></div>
+                            <div class="insp-fact"><span class="insp-fact-k">Defense</span><span id="survivalDefense"
+                                    class="insp-fact-v text-teal-200">GROUP</span></div>
+                            <div class="insp-fact"><span class="insp-fact-k">Escapes</span><span id="survivalEscapes"
+                                    class="insp-fact-v text-emerald-300">0</span></div>
+                            <div class="insp-fact"><span class="insp-fact-k">Role / Faction</span><span
+                                    id="dnaFactionBadge" class="insp-fact-v text-amber-300">FORAGER</span></div>
+                        </div>
+                    </div>
+
+                    <div class="insp-col">
+                        <details class="insp-sec" open>
+                            <summary class="insp-sum">
+                                <span class="insp-sum-title">Live ANN Topology</span>
+                                <span id="neuralArchLabel" class="insp-chip">ANN (5&rarr;6&rarr;2)</span>
+                            </summary>
+                            <div class="insp-sec-body">
+                                <canvas id="neuralCanvas" width="300" height="130" class="insp-canvas"></canvas>
+                                <div class="flex items-center justify-between text-[10px] font-mono">
+                                    <span id="neuralStateLabel" class="text-teal-300">FORAGING</span>
+                                    <span id="dnaMindGrowthText" class="text-amber-300">Mind IQ: 1.00</span>
+                                </div>
+                                <p id="dnaThoughtReadout" class="insp-thought">Thinking: Exploring island habitat</p>
+                                <div class="grid grid-cols-4 gap-1 font-mono text-[10px]">
+                                    <button data-action="ann-reward"
+                                        class="py-1 rounded bg-emerald-500/20 text-emerald-200 border border-emerald-400/40">+Reward</button>
+                                    <button data-action="ann-punish"
+                                        class="py-1 rounded bg-rose-500/20 text-rose-200 border border-rose-400/40">&minus;Punish</button>
+                                    <button data-action="neuro-add-node"
+                                        class="py-1 rounded bg-cyan-500/20 text-cyan-200 border border-cyan-400/40">+Neuron</button>
+                                    <button data-action="neuro-add-conn"
+                                        class="py-1 rounded bg-purple-500/20 text-purple-200 border border-purple-400/40">+Synapse</button>
+                                </div>
+                            </div>
+                        </details>
+
+                        <div id="humanEvolutionPanel" class="hidden insp-card space-y-2 border-amber-400/40">
+                            <div class="flex items-center justify-between font-mono text-[10px]">
+                                <span id="humanAnnStageName" class="text-amber-300 font-bold truncate">Stage 0: Tabula
+                                    Rasa</span>
+                                <span id="humanAnnTopo" class="text-cyan-300">2&rarr;2&rarr;2</span>
+                            </div>
+                            <div class="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                                <div id="humanAnnProgressBar" class="h-full bg-gradient-to-r from-amber-400 to-rose-400"
+                                    style="width:10%"></div>
+                            </div>
+                            <div class="flex items-center justify-between font-mono text-[9px] text-slate-300">
+                                <span id="humanAnnSynapses">Synapses: 4 &bull; Learned: 0</span>
+                                <span id="humanCmdStats" class="text-teal-300">Cmds: 0 &bull; Revs: 0</span>
+                            </div>
+                            <div class="flex gap-1.5">
+                                <select id="humanTaskSelect" class="insp-select flex-1">
+                                    <option value="Harvest Fruit">Task: Harvest Fruit</option>
+                                    <option value="Build Shelter">Task: Build Shelter</option>
+                                    <option value="Tend Fire">Task: Tend Fire</option>
+                                    <option value="Mine Ore">Task: Mine Ore</option>
+                                    <option value="Work Industry">Task: Work Industry</option>
+                                    <option value="Guard Colony">Task: Guard Colony</option>
+                                    <option value="Tend Orchard">Task: Tend Orchard</option>
+                                    <option value="Explore Archipelago">Task: Explore Archipelago</option>
+                                </select>
+                                <button data-action="issue-human-task"
+                                    class="px-2.5 py-1 rounded-lg bg-cyan-500/25 text-cyan-200 border border-cyan-400/45 font-mono text-[10px] font-semibold">Assign</button>
+                            </div>
+                            <div class="grid grid-cols-2 gap-1.5 font-mono text-[10px]">
+                                <button data-action="train-human"
+                                    class="py-1.5 rounded-lg bg-amber-500/20 text-amber-200 border border-amber-400/40">Train
+                                    Neataptic</button>
+                                <button data-action="spark-revolution"
+                                    class="py-1.5 rounded-lg bg-rose-500/25 text-rose-200 border border-rose-400/45 font-semibold">Revolution!</button>
+                            </div>
+                        </div>
+
+                        <div class="insp-field">
+                            <label for="dnaGoalSelect" class="insp-k font-mono">Directive Goal</label>
+                            <select id="dnaGoalSelect" class="insp-select">
+                                <option value="Forage & Thrive">Forage &amp; Thrive</option>
+                                <option value="Build & Innovate">Build &amp; Innovate</option>
+                                <option value="Explore Archipelago">Explore Archipelago</option>
+                                <option value="Patrol Reef & Currents">Patrol Reef &amp; Currents</option>
+                                <option value="Guard Colony">Guard Colony</option>
+                                <option value="Tend Orchard">Tend Orchard</option>
+                                <option value="Tend Fire">Tend Fire</option>
+                                <option value="Mine Ore">Mine Ore</option>
+                                <option value="Work Industry">Work Industry</option>
+                                <option value="Seek Spring & Heal">Seek Spring &amp; Heal</option>
+                            </select>
+                        </div>
+                        <div class="insp-niche">
+                            <span class="insp-fact-k font-mono">Ecological Role</span>
+                            <p id="dnaEcology" class="insp-niche-text">Ecological niche description</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Biodiversity Roster Card -->
+            <section id="biodiversityCard" class="hidden hud-glass p-3.5 text-xs">
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="font-bold text-emerald-300 uppercase tracking-wider text-[11px]">25-Species Biosphere
+                        Roster</h3>
+                    <button data-action="species-panel"
+                        class="text-slate-400 hover:text-white text-base leading-none">&times;</button>
+                </div>
+                <div id="survivalSummaryText" class="font-mono text-[10px] text-teal-200 mb-2">Peak Gen: 1</div>
+                <div id="speciesRosterList" class="max-h-56 overflow-y-auto space-y-1 font-mono text-[10px]"></div>
+            </section>
+
+            <!-- Telemetry Chart Card -->
+            <section id="telemetryCard" class="hidden hud-glass p-3.5 text-xs">
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="font-bold text-sky-300 uppercase tracking-wider text-[11px]">Population Telemetry</h3>
+                    <span id="chartPopulation" class="font-mono text-[10px] text-teal-300">0 Living</span>
+                    <button data-action="charts"
+                        class="text-slate-400 hover:text-white text-base leading-none">&times;</button>
+                </div>
+                <div class="flex items-center justify-between gap-1 mb-2 font-mono text-[9px]">
+                    <div class="flex gap-1">
+                        <button id="chartFilterAll" data-chart-filter="all"
+                            class="px-1.5 py-0.5 rounded bg-teal-500/25 text-teal-200 border border-teal-400/40">All</button>
+                        <button id="chartFilterLand" data-chart-filter="land"
+                            class="px-1.5 py-0.5 rounded bg-slate-900 text-slate-300 border border-slate-700">Land</button>
+                        <button id="chartFilterOcean" data-chart-filter="ocean"
+                            class="px-1.5 py-0.5 rounded bg-slate-900 text-slate-300 border border-slate-700">Ocean</button>
+                        <button id="chartFilterSky" data-chart-filter="sky"
+                            class="px-1.5 py-0.5 rounded bg-slate-900 text-slate-300 border border-slate-700">Sky</button>
+                    </div>
+                    <span id="chartEventMarkerCount" class="text-amber-300 truncate">Markers: 0</span>
+                </div>
+                <canvas id="chartCanvas" width="310" height="120"
+                    class="w-full rounded-xl border border-slate-800 bg-[#020a14]"></canvas>
+                <div class="flex gap-2 mt-2 font-mono text-[10px]">
+                    <button data-action="export-csv"
+                        class="flex-1 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-teal-200 border border-teal-500/30">Export
+                        CSV</button>
+                    <button data-action="export-json"
+                        class="flex-1 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-sky-200 border border-sky-500/30">Export
+                        JSON</button>
+                </div>
+            </section>
+
+            <!-- Environment, Scenarios & Checkpoints Card -->
+            <section id="paramsCard" class="hidden hud-glass p-3.5 text-xs space-y-2.5">
+                <div class="flex items-center justify-between">
+                    <h3 class="font-bold text-purple-300 uppercase tracking-wider text-[11px]">Environment &amp;
+                        Scenarios</h3>
+                    <span id="currentSeedBadge" class="font-mono text-[9px] text-slate-400">Seed 2026.88</span>
+                    <button data-action="params"
+                        class="text-slate-400 hover:text-white text-base leading-none">&times;</button>
+                </div>
+
+                <div class="grid grid-cols-2 gap-1.5 font-mono text-[10px]">
+                    <select id="scenarioPresetSelect"
+                        class="px-2 py-1.5 rounded-lg bg-slate-950 border border-slate-700 text-amber-200">
+                        <option value="">Load Scenario...</option>
+                        <option value="ice_age">Ice Age Chill</option>
+                        <option value="heatwave">Heatwave Drought</option>
+                        <option value="cambrian_boom">Cambrian Boom</option>
+                        <option value="stone_to_iron">Stone-to-Iron Village</option>
+                        <option value="people_revolution">People's Revolution</option>
+                    </select>
+                    <select id="selectWeather"
+                        class="px-2 py-1.5 rounded-lg bg-slate-950 border border-slate-700 text-sky-200">
+                        <option value="clear">Weather: Clear</option>
+                        <option value="rain">Weather: Rain</option>
+                        <option value="storm">Weather: Storm</option>
+                        <option value="mist">Weather: Mist</option>
+                    </select>
+                </div>
+
+                <div class="space-y-2 font-mono text-[10px]">
+                    <div>
+                        <div class="flex justify-between"><span>Solar Clock</span><span id="valTimeOfDay"
+                                class="text-amber-200">11:30</span></div>
+                        <input id="sliderTimeOfDay" data-input-action="sliders" type="range" min="0" max="23.9"
+                            step="0.1" value="11.5" class="w-full" />
+                    </div>
+                    <div>
+                        <div class="flex justify-between"><span>Thermal Shift</span><span id="valTempShift"
+                                class="text-teal-200">+0&deg;C</span></div>
+                        <input id="sliderTempShift" data-input-action="sliders" type="range" min="-15" max="15" step="1"
+                            value="0" class="w-full" />
+                    </div>
+                    <div>
+                        <div class="flex justify-between"><span>Nutrient Bloom</span><span id="valFoodRate"
+                                class="text-emerald-200">6/10</span></div>
+                        <input id="sliderFoodRate" data-input-action="sliders" type="range" min="1" max="10" step="1"
+                            value="6" class="w-full" />
+                    </div>
+                    <div>
+                        <div class="flex justify-between"><span>Mutation Rate</span><span id="valMutation"
+                                class="text-purple-200">30%</span></div>
+                        <input id="sliderMutation" data-input-action="sliders" type="range" min="5" max="85" step="1"
+                            value="30" class="w-full" />
+                    </div>
+                    <div>
+                        <div class="flex justify-between"><span>Metabolic Burn</span><span id="valBurnRate"
+                                class="text-rose-200">1.0x</span></div>
+                        <input id="sliderBurnRate" data-input-action="sliders" type="range" min="5" max="20" step="1"
+                            value="10" class="w-full" />
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between font-mono text-[10px] pt-1 border-t border-slate-800">
+                    <label class="flex items-center gap-1.5 cursor-pointer"><input id="toggleBubbles" type="checkbox"
+                            checked /><span>Thought Tags</span></label>
+                    <label class="flex items-center gap-1.5 cursor-pointer"><input id="toggleClouds" type="checkbox"
+                            checked /><span>Voxel Clouds</span></label>
+                </div>
+
+                <div class="pt-2 border-t border-slate-800 space-y-1.5 font-mono text-[10px]">
+                    <div class="flex gap-1">
+                        <select id="checkpointSlotSelect"
+                            class="px-2 py-1 rounded bg-slate-950 border border-slate-700 text-slate-200">
+                            <option value="slot_1">Slot 1</option>
+                            <option value="slot_2">Slot 2</option>
+                            <option value="slot_3">Slot 3</option>
+                        </select>
+                        <input id="checkpointSlotName" type="text" placeholder="Snapshot label..."
+                            class="flex-1 min-w-0 px-2 py-1 rounded bg-slate-950 border border-slate-700 text-slate-200" />
+                    </div>
+                    <div class="grid grid-cols-3 gap-1">
+                        <button data-action="save-checkpoint"
+                            class="py-1 rounded bg-teal-500/20 text-teal-200 border border-teal-400/40">Save</button>
+                        <button data-action="restore-checkpoint"
+                            class="py-1 rounded bg-sky-500/20 text-sky-200 border border-sky-400/40">Restore</button>
+                        <button data-action="undo-checkpoint"
+                            class="py-1 rounded bg-slate-800 text-slate-300 border border-slate-700">Undo</button>
+                    </div>
+                    <div class="flex gap-1">
+                        <input id="seedStateInput" type="text" placeholder="dl1|... seed code"
+                            class="flex-1 min-w-0 px-2 py-1 rounded bg-slate-950 border border-slate-700 text-slate-200" />
+                        <button data-action="copy-seed-code"
+                            class="px-2 py-1 rounded bg-slate-800 text-teal-200 border border-slate-700">Copy</button>
+                        <button data-action="apply-seed-code"
+                            class="px-2 py-1 rounded bg-teal-500/20 text-teal-200 border border-teal-400/40">Load</button>
+                    </div>
+                    <div class="grid grid-cols-2 gap-1 pt-1">
+                        <button data-action="reset-humans"
+                            class="py-1 rounded bg-rose-500/20 text-rose-200 border border-rose-400/40">Reset Human
+                            ANN</button>
+                        <button data-action="reset"
+                            class="py-1 rounded bg-slate-800 text-amber-200 border border-slate-700">New World
+                            Seed</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Lineage & Neuroevolution Card -->
+            <section id="lineageCard" class="hidden hud-glass p-3.5 text-xs space-y-2">
+                <div class="flex items-center justify-between">
+                    <h3 class="font-bold text-pink-300 uppercase tracking-wider text-[11px]">Lineage &amp;
+                        Neuroevolution</h3>
+                    <button data-action="lineage"
+                        class="text-slate-400 hover:text-white text-base leading-none">&times;</button>
+                </div>
+                <p id="lineageChainBox" class="font-mono text-[10px] text-slate-300">Select an organism to trace lineage
+                    &amp; compare ANN activations.</p>
+                <div class="grid grid-cols-2 gap-1.5 font-mono text-[10px]">
+                    <div id="compareLeftBox" class="p-2 rounded-lg bg-slate-950/80 border border-teal-500/30"></div>
+                    <div id="compareRightBox" class="p-2 rounded-lg bg-slate-950/80 border border-amber-500/30"></div>
+                </div>
+                <div class="grid grid-cols-3 gap-1 font-mono text-[10px]">
+                    <button data-action="pick-compare-peer"
+                        class="py-1.5 rounded bg-slate-900 text-amber-200 border border-slate-700">Swap Peer</button>
+                    <button data-action="evolve-gen"
+                        class="py-1.5 rounded bg-teal-500/25 text-teal-200 border border-teal-400/40">Select
+                        Gen</button>
+                    <button data-action="record-milestone"
+                        class="py-1.5 rounded bg-purple-500/20 text-purple-200 border border-purple-400/40">+Milestone</button>
+                </div>
+                <div id="milestoneStrip" class="flex gap-1.5 overflow-x-auto py-1 font-mono text-[9px] text-slate-400">
+                </div>
+            </section>
+
+            <!-- Biosphere Challenges Card -->
+            <section id="challengesCard" class="hidden hud-glass p-3.5 text-xs space-y-2">
+                <div class="flex items-center justify-between">
+                    <h3 class="font-bold text-yellow-300 uppercase tracking-wider text-[11px]">Evolutionary Milestones
+                    </h3>
+                    <span id="challengesBadge" class="font-mono text-[10px] text-emerald-300">0/5 Done</span>
+                    <button data-action="challenges"
+                        class="text-slate-400 hover:text-white text-base leading-none">&times;</button>
+                </div>
+                <div id="challengesList" class="space-y-1.5 font-mono text-[10px]"></div>
+            </section>
+        </div>
+    </aside>
+
+    <!-- BOTTOM FLOATING ACTION DOCK -->
+    <nav class="fixed bottom-3 left-1/2 -translate-x-1/2 z-20 max-w-[calc(100vw-1rem)]">
+        <div class="hud-glass flex items-center gap-1.5 overflow-x-auto">
+            <button data-action="pause"
+                class="px-3 py-2 rounded-xl bg-teal-500/20 text-teal-200 border border-teal-400/40 font-mono text-xs font-semibold shrink-0">
+                <span id="textPlayPause">Pause</span>
+            </button>
+
+            <div
+                class="flex items-center bg-slate-950/80 rounded-xl p-0.5 border border-slate-800 font-mono text-[11px] shrink-0">
+                <button id="spd1" data-speed="1"
+                    class="px-2.5 py-1.5 rounded-lg bg-teal-500/20 text-teal-300 font-semibold transition">1x</button>
+                <button id="spd2" data-speed="2"
+                    class="px-2.5 py-1.5 rounded-lg text-slate-400 hover:text-white transition">2x</button>
+                <button id="spd5" data-speed="5"
+                    class="px-2.5 py-1.5 rounded-lg text-slate-400 hover:text-white transition">5x</button>
+            </div>
+
+            <button id="toolInspect" data-mode="inspect"
+                class="px-3 py-2 rounded-xl text-xs font-medium transition flex items-center gap-1.5 shrink-0 bg-teal-500/25 text-teal-200 border border-teal-400/40">Inspect</button>
+            <button id="toolFood" data-mode="food"
+                class="px-3 py-2 rounded-xl text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800/60 transition flex items-center gap-1.5 shrink-0">+Fruit</button>
+            <button id="toolToxin" data-mode="toxin"
+                class="px-3 py-2 rounded-xl text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800/60 transition flex items-center gap-1.5 shrink-0">+Spring</button>
+
+            <div class="flex items-center gap-1 shrink-0">
+                <button id="toolSpawn" data-mode="spawn"
+                    class="px-2.5 py-2 rounded-xl text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800/60 transition">Spawn:</button>
+                <select id="spawnSpeciesSelect"
+                    class="px-2 py-1.5 rounded-xl bg-slate-950 border border-slate-700 font-mono text-[11px] text-teal-200">
+                    <option value="human">Human (Homo sapiens)</option>
+                    <option value="capybara">Capybara</option>
+                    <option value="reddeer">Red Deer</option>
+                    <option value="bison">Wild Bison</option>
+                    <option value="jaguar">Jaguar</option>
+                    <option value="snowleopard">Snow Leopard</option>
+                    <option value="woodlouse">Woodlouse</option>
+                    <option value="earthworm">Earthworm</option>
+                    <option value="armadillo">Armadillo</option>
+                    <option value="pangolin">Pangolin</option>
+                    <option value="molerat">Mole Rat</option>
+                    <option value="honeybee">Honeybee</option>
+                    <option value="hummingbird">Hummingbird</option>
+                    <option value="albatross">Albatross</option>
+                    <option value="falcon">Peregrine Falcon</option>
+                    <option value="flyingsquirrel">Flying Squirrel</option>
+                    <option value="clownfish">Clownfish</option>
+                    <option value="moonjelly">Moon Jelly</option>
+                    <option value="seaotter">Sea Otter</option>
+                    <option value="mantaray">Manta Ray</option>
+                    <option value="seaturtle">Sea Turtle</option>
+                    <option value="dolphin">Dolphin</option>
+                    <option value="octopus">Reef Octopus</option>
+                    <option value="whale">Blue Whale</option>
+                    <option value="nautilus">Nautilus</option>
+                </select>
+            </div>
+
+            <div class="flex items-center gap-1 shrink-0">
+                <button id="toolBuild" data-mode="build"
+                    class="px-2.5 py-2 rounded-xl text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800/60 transition">Build:</button>
+                <select id="buildStructureSelect"
+                    class="px-2 py-1.5 rounded-xl bg-slate-950 border border-slate-700 font-mono text-[11px] text-amber-200">
+                    <option value="camp">Timber House</option>
+                    <option value="campfire">Fire Hearth</option>
+                    <option value="granary">Farm Granary</option>
+                    <option value="mine">Ore Mine Shaft</option>
+                    <option value="industry">Brick Foundry</option>
+                    <option value="tower">Watchtower</option>
+                    <option value="beacon">Research Lab</option>
+                </select>
+            </div>
+
+            <select id="camPresetSelect"
+                class="px-2 py-1.5 rounded-xl bg-slate-950 border border-slate-700 font-mono text-[11px] text-sky-200 shrink-0">
+                <option value="island">Cam: Active Isle</option>
+                <option value="overview">Cam: 7-Isle Atlas</option>
+                <option value="fpv">Cam: First-Person</option>
+                <option value="cryo">Cam: Cryo-Lab</option>
+            </select>
+
+            <button data-action="view"
+                class="px-2.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 font-mono text-[11px] shrink-0">2D/3D</button>
+            <button data-action="zones"
+                class="px-2.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 font-mono text-[11px] shrink-0">Pins</button>
+            <button data-action="camera"
+                class="px-2.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-teal-200 font-mono text-[11px] shrink-0">Center</button>
+        </div>
+    </nav>
+
+    <!-- MODAL 1: RESEARCH MODE -->
+    <div id="researchModal"
+        class="hidden fixed inset-0 z-40 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="hud-glass max-w-2xl w-full p-5 space-y-3 text-xs">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-2.5">
+                <div>
+                    <h2 class="text-sm font-bold text-cyan-300 uppercase tracking-wider">Research Mode &mdash;
+                        Observation Logger</h2>
+                    <p class="text-[11px] text-slate-400">Capture baseline &amp; repeated trial observations and export
+                        JSON reports.</p>
+                </div>
+                <button data-action="research"
+                    class="text-slate-400 hover:text-white text-xl leading-none">&times;</button>
+            </div>
+            <div class="grid sm:grid-cols-2 gap-2.5 font-mono text-[11px]">
+                <div>
+                    <label for="researchQuestion" class="text-slate-400 block mb-1">Research Question</label>
+                    <input id="researchQuestion" type="text"
+                        value="How does nutrient availability affect population stability?"
+                        class="w-full px-2.5 py-1.5 rounded-lg bg-slate-950 border border-slate-700 text-slate-100" />
+                </div>
+                <div>
+                    <label for="researchCondition" class="text-slate-400 block mb-1">Active Trial Condition</label>
+                    <input id="researchCondition" type="text" value="Baseline Control"
+                        class="w-full px-2.5 py-1.5 rounded-lg bg-slate-950 border border-slate-700 text-amber-200" />
+                </div>
+            </div>
+            <div class="grid grid-cols-4 gap-2 font-mono text-[11px]">
+                <div class="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800"><span
+                        class="text-slate-400 block text-[10px]">Population</span><b id="researchPopulation"
+                        class="text-teal-300 text-sm">0</b></div>
+                <div class="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800"><span
+                        class="text-slate-400 block text-[10px]">Land/Ocean/Sky</span><b id="researchHabitats"
+                        class="text-sky-300 text-sm">0 / 0 / 0</b></div>
+                <div class="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800"><span
+                        class="text-slate-400 block text-[10px]">Avg Energy</span><b id="researchEnergy"
+                        class="text-emerald-300 text-sm">0</b></div>
+                <div class="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800"><span
+                        class="text-slate-400 block text-[10px]">Avg Hydration</span><b id="researchHydration"
+                        class="text-cyan-300 text-sm">0%</b></div>
+            </div>
+            <div class="flex flex-wrap items-center justify-between gap-2 font-mono text-[11px]">
+                <div class="flex flex-wrap gap-1.5">
+                    <button data-action="research-baseline"
+                        class="px-3 py-1.5 rounded-lg bg-teal-500/25 text-teal-200 border border-teal-400/45 font-semibold">Capture
+                        Baseline</button>
+                    <button data-action="research-record"
+                        class="px-3 py-1.5 rounded-lg bg-sky-500/25 text-sky-200 border border-sky-400/45 font-semibold">Record
+                        Observation</button>
+                    <button data-action="research-export"
+                        class="px-3 py-1.5 rounded-lg bg-amber-500/25 text-amber-200 border border-amber-400/45 font-semibold">Export
+                        JSON Report</button>
+                    <button data-action="research-reset"
+                        class="px-2.5 py-1.5 rounded-lg bg-slate-900 text-slate-300 border border-slate-700">Clear</button>
+                </div>
+                <span id="researchCount" class="text-slate-400">0 records</span>
+            </div>
+            <div id="researchLog" class="hud-scroll max-h-44 overflow-y-auto space-y-1.5 font-mono text-[10px]"></div>
+            <p class="text-[10px] text-slate-400 border-t border-slate-800 pt-2">Note: Records measurements from this
+                artificial-life simulation in session memory. Export JSON before refreshing.</p>
+        </div>
+    </div>
+
+    <!-- MODAL 2: WORLD SCALE EXPLORER -->
+    <div id="scaleGuideModal"
+        class="hidden fixed inset-0 z-40 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="hud-glass max-w-xl w-full p-5 space-y-3 text-xs">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                <h2 class="text-sm font-bold text-teal-300 uppercase tracking-wider">World Scale Explorer (1.7 m Human
+                    Reference)</h2>
+                <button data-action="scale-guide"
+                    class="text-slate-400 hover:text-white text-xl leading-none">&times;</button>
+            </div>
+            <p class="text-slate-300 leading-relaxed">
+                The rendered human mesh (~26.4 world units tall) is calibrated to a <b class="text-white">1.7 m</b>
+                baseline (1 world unit &approx; <span class="font-mono text-teal-300">0.0644 m</span>). Species, voxel
+                trees (~18 m), and single-storey timber houses are proportioned against this reference.
+            </p>
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 font-mono text-[11px]">
+                <div class="p-2 rounded-lg bg-slate-950/80 border border-slate-800">Human: <b
+                        class="text-amber-300">1.70 m</b></div>
+                <div class="p-2 rounded-lg bg-slate-950/80 border border-slate-800">Wild Bison: <b
+                        class="text-teal-300">1.80 m</b></div>
+                <div class="p-2 rounded-lg bg-slate-950/80 border border-slate-800">Red Deer: <b
+                        class="text-teal-300">1.40 m</b></div>
+                <div class="p-2 rounded-lg bg-slate-950/80 border border-slate-800">Capybara: <b
+                        class="text-teal-300">0.60 m</b></div>
+                <div class="p-2 rounded-lg bg-slate-950/80 border border-slate-800">Blue Whale: <b
+                        class="text-sky-300">25.0 m</b></div>
+                <div class="p-2 rounded-lg bg-slate-950/80 border border-slate-800">Voxel Tree: <b
+                        class="text-emerald-300">~18.0 m</b></div>
+            </div>
+            <p class="text-[10px] text-slate-400">Approximate game-world reference dimensions; island coordinates and
+                legacy structures are not globally rescaled.</p>
+        </div>
+    </div>
+
+    <!-- MODAL 3: HOUSE INTERIOR CUTAWAY -->
+    <div id="houseInteriorModal"
+        class="hidden fixed bottom-20 left-3 z-30 hud-glass p-3.5 max-w-xs text-xs space-y-2 border-amber-400/50">
+        <div class="flex items-center justify-between">
+            <h3 class="font-bold text-amber-300 uppercase tracking-wider text-[11px]">House Interior Cutaway</h3>
+            <button data-action="interior-mode"
+                class="text-slate-400 hover:text-white text-base leading-none">&times;</button>
+        </div>
+        <p class="text-[11px] text-slate-300 leading-snug">Timber houses now display open cutaway interiors: sleeping
+            area, work table, stool, stone partition, hearth, and storage.</p>
+        <button data-action="interior-mode"
+            class="w-full py-1.5 rounded-lg bg-amber-500/20 text-amber-200 border border-amber-400/40 font-mono text-[10px]">Restore
+            Exterior Roofs</button>
+    </div>
+
+    <!-- MODAL 4: SCIENTIFIC APPLICATIONS -->
+    <div id="applicationsModal"
+        class="hidden fixed inset-0 z-40 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="hud-glass max-w-xl w-full p-5 space-y-3 text-xs">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                <h2 class="text-sm font-bold text-teal-300 uppercase tracking-wider">Scientific &amp; Educational
+                    Applications</h2>
+                <button data-action="applications"
+                    class="text-slate-400 hover:text-white text-xl leading-none">&times;</button>
+            </div>
+            <ul class="space-y-2 text-slate-300 leading-relaxed">
+                <li><b class="text-teal-200">Neuroevolution &amp; Neataptic ANN:</b> Observe real-time synaptic
+                    reinforcement, structural node additions, and memetic transfer across generations.</li>
+                <li><b class="text-sky-200">Multi-Sphere Ecology:</b> Study resource competition, predator-prey evasion,
+                    and stress resilience across Lithosphere, Ocean, and Atmosphere niches.</li>
+                <li><b class="text-amber-200">Emergent Cultural Eras:</b> Track how cooperative toolmaking, fire,
+                    agriculture, and mining reshape settlement architecture.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- MODAL 5: KEYBOARD SHORTCUTS -->
+    <div id="shortcutsModal"
+        class="hidden fixed inset-0 z-40 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="hud-glass max-w-md w-full p-5 space-y-2.5 text-xs font-mono">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                <h2 class="text-sm font-bold text-teal-300 uppercase">Keyboard Shortcuts</h2>
+                <button data-action="shortcuts"
+                    class="text-slate-400 hover:text-white text-xl leading-none">&times;</button>
+            </div>
+            <div class="grid grid-cols-2 gap-1.5 text-[11px] text-slate-300">
+                <span><b class="text-white">Space</b> &mdash; Pause / Resume</span>
+                <span><b class="text-white">1 / 2 / 3 / 4</b> &mdash; Camera Presets</span>
+                <span><b class="text-white">5</b> &mdash; Cycle Speed (1x/2x/5x)</span>
+                <span><b class="text-white">F</b> &mdash; Follow Selected</span>
+                <span><b class="text-white">V</b> &mdash; Toggle First-Person</span>
+                <span><b class="text-white">R</b> &mdash; Spark Revolution</span>
+                <span><b class="text-white">M</b> &mdash; Toggle Ambient Audio</span>
+                <span><b class="text-white">Tab / Esc</b> &mdash; Cycle / Close</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 6: SPECIMEN CRYO-LAB -->
+    <div id="specimenLabModal"
+        class="hidden fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-lg flex items-center justify-center p-4 overflow-y-auto">
+        <div class="hud-glass max-w-4xl w-full p-5 space-y-4 text-xs my-auto">
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-3">
+                <div class="flex items-center gap-3">
+                    <div id="modalAvatarBadge"
+                        class="w-10 h-10 rounded-xl bg-teal-500/20 border border-teal-400/50 grid place-items-center font-mono font-bold text-teal-200">
+                        00</div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h2 id="modalSpecimenName" class="text-base font-bold text-white">Specimen</h2>
+                            <span id="modalCognitiveStatus"
+                                class="font-mono text-[10px] px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-400/40">NEURAL
+                                AGENT</span>
+                        </div>
+                        <p id="modalLifeStageDetail" class="font-mono text-[11px] text-teal-300">MATURE ADULT &bull;
+                            LITHOSPHERE</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-1.5 font-mono text-[11px]">
+                    <input id="cryoSearchInput" type="text" placeholder="Search name/ID..."
+                        class="px-2.5 py-1.5 rounded-lg bg-slate-950 border border-slate-700 text-slate-200 w-36" />
+                    <button data-action="lab-prev"
+                        class="px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-700">&larr;</button>
+                    <button data-action="lab-next"
+                        class="px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-700">&rarr;</button>
+                    <button data-action="boost-specimen"
+                        class="px-2.5 py-1.5 rounded-lg bg-emerald-500/20 text-emerald-200 border border-emerald-400/40">Boost
+                        ATP</button>
+                    <button data-action="lab-mutate"
+                        class="px-2.5 py-1.5 rounded-lg bg-amber-500/20 text-amber-200 border border-amber-400/40">Speciate</button>
+                    <button data-action="close-lab"
+                        class="px-2.5 py-1.5 rounded-lg bg-rose-500/20 text-rose-200 border border-rose-400/40">&times;</button>
+                </div>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-4">
+                <div class="space-y-3">
+                    <div class="p-3 rounded-xl bg-slate-950/80 border border-slate-800 space-y-2">
+                        <div class="flex items-center justify-between font-mono text-[10px]">
+                            <span id="modalStrainBadge" class="text-teal-300">STRAIN_GEN_V1</span>
+                            <span id="modalActiveNodesBadge" class="text-sky-300">11 Nodes</span>
+                        </div>
+                        <canvas id="cryo3dCanvas" width="380" height="210"
+                            class="w-full rounded-lg border border-slate-800 cursor-grab"></canvas>
+                        <div class="grid grid-cols-3 gap-2 font-mono text-[10px]">
+                            <div><span class="text-slate-400 block">Resolution</span><b id="modalResolutionVal"
+                                    class="text-white">1.65 &Aring;</b></div>
+                            <div><span class="text-slate-400 block">Binding</span><b id="modalBindingEnergy"
+                                    class="text-teal-300">-8.9 kcal/mol</b></div>
+                            <div><span class="text-slate-400 block">Sensor Field</span><b id="modalSensorArea"
+                                    class="text-sky-300">420 &Aring;&sup2;</b></div>
+                        </div>
+                    </div>
+
+                    <div
+                        class="p-3 rounded-xl bg-slate-950/80 border border-slate-800 space-y-1.5 font-mono text-[10px]">
+                        <div class="flex justify-between"><span>Civilization: <b id="modalCivilization"
+                                    class="text-amber-300">Foraging</b></span><span>Hydration: <b id="modalHydration"
+                                    class="text-sky-300">100%</b></span></div>
+                        <div class="flex justify-between"><span>Fitness Index: <b id="modalDefenseVal"
+                                    class="text-emerald-300">10.0</b></span><span>Active Synapses: <b
+                                    id="modalActiveNodesCount" class="text-purple-300">12</b></span></div>
+                        <p id="modalEcologyDetail" class="font-sans text-[11px] text-slate-300 pt-1">Ecological role</p>
+                    </div>
+                </div>
+
+                <div class="space-y-3">
+                    <div class="p-3 rounded-xl bg-slate-950/80 border border-slate-800 space-y-2 font-mono text-[10px]">
+                        <div class="flex items-center justify-between">
+                            <span id="cryoProteinTitle" class="font-bold text-white">Species Matrix</span>
+                            <span id="cryoPatternTag" class="text-teal-300">Striped</span>
+                            <span id="cryoVitalityBadge"
+                                class="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300">EXCELLENT</span>
+                        </div>
+                        <div class="grid grid-cols-5 gap-1.5 text-center">
+                            <div class="p-1.5 rounded bg-slate-900"><span
+                                    class="text-slate-400 block text-[9px]">Mass</span><b id="cryoMassVal">18 kDa</b>
+                            </div>
+                            <div class="p-1.5 rounded bg-slate-900"><span
+                                    class="text-slate-400 block text-[9px]">Speed</span><b id="cryoSpeedVal">2.0</b>
+                            </div>
+                            <div class="p-1.5 rounded bg-slate-900"><span
+                                    class="text-slate-400 block text-[9px]">Vision</span><b id="cryoVisionVal">180</b>
+                            </div>
+                            <div class="p-1.5 rounded bg-slate-900"><span
+                                    class="text-slate-400 block text-[9px]">Escapes</span><b id="cryoEscapesVal">0</b>
+                            </div>
+                            <div class="p-1.5 rounded bg-slate-900"><span class="text-slate-400 block text-[9px]">Kd
+                                    (nM)</span><b id="cryoKdVal">32</b></div>
+                        </div>
+                        <div class="space-y-1.5 pt-1">
+                            <div>
+                                <div class="flex justify-between"><span>Morphogenesis</span><span
+                                        id="pipeFoldPct">90%</span></div>
+                                <div class="h-1.5 bg-slate-800 rounded">
+                                    <div id="pipeFoldBar" class="h-full bg-teal-400" style="width:90%"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between"><span>Synaptic Plasticity</span><span
+                                        id="pipeSynPct">75%</span></div>
+                                <div class="h-1.5 bg-slate-800 rounded">
+                                    <div id="pipeSynBar" class="h-full bg-purple-400" style="width:75%"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between"><span>Osmotic Balance</span><span
+                                        id="pipeEcoPct">100%</span></div>
+                                <div class="h-1.5 bg-slate-800 rounded">
+                                    <div id="pipeEcoBar" class="h-full bg-sky-400" style="width:100%"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between"><span>ATP Reserves</span><span
+                                        id="pipeMetPct">60%</span></div>
+                                <div class="h-1.5 bg-slate-800 rounded">
+                                    <div id="pipeMetBar" class="h-full bg-emerald-400" style="width:60%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-2">
+                        <canvas id="cryoInteractionCanvas" width="120" height="90"
+                            class="w-full rounded-lg border border-slate-800"></canvas>
+                        <canvas id="cryoProteinCanvas" width="120" height="90"
+                            class="w-full rounded-lg border border-slate-800"></canvas>
+                        <canvas id="cryoChemicalCanvas" width="120" height="90"
+                            class="w-full rounded-lg border border-slate-800"></canvas>
+                    </div>
+                    <canvas id="modalVitalityCanvas" width="380" height="68"
+                        class="w-full rounded-lg border border-slate-800"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts: Three.js r128 -> Neataptic -> Simulation Engine -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/neataptic@1.4.7/dist/neataptic.js"></script>
+    <script src="./script.js"></script>
+</body>
+
+</html>
