@@ -1,6 +1,1272 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect width="64" height="64" rx="16" fill="#06212b"/>
-  <path d="M32 9 51 20v24L32 55 13 44V20z" fill="none" stroke="#22d3c5" stroke-width="3"/>
-  <path d="m32 18 11 7v14l-11 7-11-7V25z" fill="#0f766e" stroke="#99f6e4" stroke-width="2"/>
-  <circle cx="32" cy="32" r="5" fill="#ecfeff"/>
-</svg>
+<!DOCTYPE html>
+<html lang="en" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Digital Life: 7-Island Voxel Biosphere, ANN &amp; Human Revolutions</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="./tailwind.css">
+    <link rel="stylesheet" href="./style.css">
+
+</head>
+
+<body class="relative w-screen h-screen overflow-hidden text-slate-100">
+
+    <!-- 3D THREE.JS VOXEL ARCHIPELAGO & 2D TELEMETRY OVERLAY -->
+    <canvas id="world3dCanvas" class="fixed inset-0 w-full h-full block z-0 pointer-events-none"></canvas>
+    <canvas id="simCanvas" class="fixed inset-0 w-full h-full block cursor-grab active:cursor-grabbing z-10"></canvas>
+    <button id="fpvRestoreUiButton" data-action="fpv-show-ui" aria-label="Show interface controls" title="Show interface controls"
+        class="hidden fixed top-4 right-4 z-[120] w-11 h-11 rounded-full border border-cyan-300/60 bg-slate-950/85 text-cyan-100 text-2xl shadow-2xl hover:bg-cyan-900/80">×</button>
+
+    <!-- HOVER OBJECT INSPECTOR TOOLTIP -->
+    <div id="hoverTooltip"
+        class="hidden fixed z-30 pointer-events-none hud-glass rounded-xl px-3 py-2 text-[11px] font-mono max-w-[250px] border-teal-400/50 shadow-2xl">
+        <div class="flex items-center justify-between gap-2 mb-0.5">
+            <span id="hoverTitle" class="font-bold text-white truncate">Object</span>
+            <span id="hoverBadge"
+                class="text-[9px] px-1.5 py-0.5 rounded bg-teal-500/20 text-teal-200 border border-teal-400/35 shrink-0">TYPE</span>
+        </div>
+        <div id="hoverSub" class="text-[10px] text-amber-300 truncate">Details</div>
+        <div id="hoverMeta" class="text-[9px] text-slate-300 mt-0.5 leading-snug">Click to inspect</div>
+    </div>
+
+    <!-- FPV HUD BANNER & SENSORY TELEMETRY STRIP -->
+    <div id="fpvHudStack"
+        class="hidden fixed top-4 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center gap-1.5 max-w-[min(94vw,44rem)] pointer-events-none">
+        <div id="fpvBanner"
+            class="hud-glass rounded-full px-3.5 py-1.5 flex items-center gap-2 sm:gap-3 border-amber-400/50 shadow-2xl pointer-events-auto max-w-full">
+            <span class="w-2 h-2 rounded-full bg-amber-400 animate-ping shrink-0"></span>
+            <span id="fpvBannerText" class="text-[11px] sm:text-xs font-mono font-semibold text-amber-200 truncate">FPV:
+                Organism</span>
+            <span id="fpvSphereBadge"
+                class="hidden sm:inline-block px-2 py-0.5 rounded-full bg-teal-500/20 text-teal-200 border border-teal-400/35 text-[10px] font-mono shrink-0">LITHOSPHERE</span>
+            <div class="flex items-center gap-1 shrink-0">
+                <button data-action="fpv-prev" title="Previous Subject ([)"
+                    class="px-2 py-0.5 rounded-full bg-slate-900/80 hover:bg-slate-800 text-amber-100 border border-amber-400/30 text-[10px] sm:text-[11px] font-mono transition">&lsaquo;
+                    Prev</button>
+                <button data-action="fpv-next" title="Next Subject (])"
+                    class="px-2 py-0.5 rounded-full bg-slate-900/80 hover:bg-slate-800 text-amber-100 border border-amber-400/30 text-[10px] sm:text-[11px] font-mono transition">Next
+                    &rsaquo;</button>
+                <button id="btnFpvRecenter" data-action="fpv-recenter" title="Re-center Gaze (R)"
+                    class="px-2 py-0.5 rounded-full bg-cyan-500/20 hover:bg-cyan-500/35 text-cyan-200 border border-cyan-400/35 text-[10px] sm:text-[11px] font-mono transition">Center</button>
+                <button data-action="fpv-hide-ui" title="Hide all interface controls for an unobstructed FPV view"
+                    class="px-2.5 py-0.5 rounded-full bg-cyan-500/20 hover:bg-cyan-500/35 text-cyan-100 border border-cyan-400/40 text-[10px] sm:text-[11px] font-mono transition">Hide UI</button>
+                <button data-action="fpv" aria-label="Exit FPV mode"
+                    class="px-2.5 py-0.5 rounded-full bg-amber-500/25 hover:bg-amber-500/40 text-amber-100 border border-amber-400/40 text-[10px] sm:text-[11px] font-mono transition">Exit</button>
+            </div>
+        </div>
+
+        <div id="fpvTelemetryStrip"
+            class="hud-glass rounded-2xl px-3 py-1.5 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[10px] font-mono text-slate-200 border-amber-300/25 pointer-events-auto max-w-full">
+            <span id="fpvStatePill"
+                class="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-200 font-semibold">FORAGING</span>
+            <span id="fpvVitalsMetric" class="text-emerald-300">NRG 100% &bull; HYD 100% &bull; STR 12%</span>
+            <span id="fpvKinematicsMetric" class="text-sky-300">SPD 0.0 &bull; HDG 000&deg;</span>
+            <span id="fpvGazeMetric" class="text-cyan-200 hidden sm:inline">GAZE 0&deg; &bull; Drag/Arrows to
+                Look</span>
+        </div>
+    </div>
+
+    <!-- TOP-LEFT PROJECT HEADER, TELEMETRY & 7-ISLAND / 7-ERA TIMELINE -->
+    <div id="topLeftHud"
+        class="fixed top-3 left-3 sm:top-4 sm:left-4 z-20 flex flex-col gap-2 pointer-events-none max-w-[calc(100vw-24px)]">
+        <div
+            class="hud-glass hud-card-accent rounded-2xl px-3.5 py-2.5 pointer-events-auto flex flex-wrap items-center gap-3 sm:gap-4 self-start">
+            <div class="flex items-center gap-2.5">
+                <div
+                    class="w-9 h-9 rounded-xl bg-teal-500/15 border border-teal-400/40 flex items-center justify-center text-teal-300 shadow-[0_0_16px_rgba(45,212,191,0.28)] shrink-0">
+                    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                    </svg>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h1 class="text-sm sm:text-base font-bold tracking-wide text-white">DIGITAL LIFE EVOLUTION LAB
+                        </h1>
+                        <span
+                            class="text-[10px] font-mono px-1.5 py-0.5 rounded-md bg-teal-500/15 text-teal-300 border border-teal-400/35">VOXEL
+                            GLSL</span>
+                    </div>
+                    <p class="text-[11px] text-slate-400 hidden sm:block">Minecraft Voxels &bull; GLSL Shaders &bull;
+                        Neataptic ANN &bull; Revolutions</p>
+                </div>
+            </div>
+
+            <div class="h-7 w-px bg-slate-800/90 hidden md:block"></div>
+
+            <div class="flex items-center gap-2.5 sm:gap-3.5 text-xs font-mono flex-wrap">
+                <div class="flex flex-col">
+                    <span class="text-[9px] uppercase tracking-wider text-slate-400">Living Beings</span>
+                    <div class="flex items-center gap-1.5">
+                        <span class="w-2 h-2 rounded-full bg-teal-400 animate-pulse"></span>
+                        <span id="hudPop" class="text-white font-semibold text-xs sm:text-sm">54 Living</span>
+                    </div>
+                </div>
+                <button data-action="inspect-human" title="Click to inspect & command a Human ANN"
+                    class="flex flex-col text-left px-2 py-0.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 border border-amber-400/30 transition">
+                    <span class="text-[9px] uppercase tracking-wider text-amber-300">Human ANN</span>
+                    <span id="hudHumanStage" class="text-amber-200 font-semibold text-xs">0/4 (2&rarr;2&rarr;2)</span>
+                </button>
+                <button data-action="spark-revolution"
+                    title="Click to advance Human Revolution (Fire, Mining, Industry)!"
+                    class="flex flex-col text-left px-2 py-0.5 rounded-lg bg-amber-500/15 hover:bg-amber-500/30 border border-amber-400/40 transition">
+                    <span class="text-[9px] uppercase tracking-wider text-amber-300">Revolution &bull; Ind</span>
+                    <span id="hudRevolutionBadge" class="text-amber-200 font-semibold text-xs">Pre-Fire &bull; 0
+                        Ore</span>
+                </button>
+                <div class="hidden sm:flex flex-col">
+                    <span class="text-[9px] uppercase tracking-wider text-slate-400">Colonies &bull; Builds</span>
+                    <div class="flex items-center gap-1 text-xs font-semibold">
+                        <span id="hudColoniesCount" class="text-teal-300">0</span>
+                        <span class="text-slate-500">/</span>
+                        <span id="hudStructuresCount" class="text-emerald-300">0</span>
+                        <span class="text-slate-500">/</span>
+                        <span id="hudTasksCount" class="text-cyan-300">0</span>
+                    </div>
+                </div>
+                <button data-action="cycle-weather" title="Click to cycle Weather (Clear / Rain / Storm / Mist)"
+                    class="flex flex-col text-left px-2 py-0.5 rounded-lg bg-sky-500/10 hover:bg-sky-500/20 border border-sky-400/30 transition">
+                    <span class="text-[9px] uppercase tracking-wider text-sky-300">Sky &amp; Weather</span>
+                    <span id="hudWeatherClock" class="text-sky-100 font-semibold text-xs">12:00 &bull; Clear</span>
+                </button>
+                <span id="hudLeaderCount" class="hidden">0/0</span>
+                <span id="hudTideSeason" class="hidden">100%</span>
+                <span id="hudSpheresCount" class="hidden">A:0 O:0 L:0</span>
+            </div>
+        </div>
+
+        <!-- 7-ERA & 7-ISLAND ARCHIPELAGO STEPPER -->
+        <div id="eraStepperCard"
+            class="hud-glass rounded-2xl p-2.5 pointer-events-auto flex flex-col gap-1.5 max-w-[680px]">
+            <div class="flex items-center justify-between px-1 text-[10px] font-mono gap-2">
+                <div class="flex items-center gap-1.5 min-w-0">
+                    <span class="text-teal-400 font-bold shrink-0">ERA:</span>
+                    <span id="eraYearBadge" class="text-amber-300 font-bold shrink-0">4.6-4.0 BYA</span>
+                    <span id="eraTitleBadge" class="text-white font-semibold truncate">Hadean Caldera Isle</span>
+                </div>
+                <div class="flex items-center gap-2 shrink-0">
+                    <select id="camPresetSelect" title="Camera Preset (Keys 1-4)"
+                        class="bg-slate-950/90 border border-teal-500/35 rounded-lg px-1.5 py-0.5 text-[10px] font-mono text-teal-200 focus:outline-none">
+                        <option value="overview">Cam: Archipelago (1)</option>
+                        <option value="island">Cam: Island Focus (2)</option>
+                        <option value="fpv">Cam: FPV Chase (3)</option>
+                        <option value="cryo">Cam: Cryo-Lab (4)</option>
+                    </select>
+                    <label class="flex items-center gap-1 cursor-pointer text-slate-300">
+                        <input type="checkbox" id="toggleAutoEra" checked class="accent-teal-400">
+                        <span>Auto-Cycle</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="px-1 text-[10px] text-slate-300/90 truncate" id="eraSubtitle">
+                Volcanic basalt caldera, steaming mineral pools &amp; early extremophiles
+            </div>
+
+            <div class="grid grid-cols-7 gap-1 font-mono text-[9px] sm:text-[10px]">
+                <button data-era="0" id="eraBtn0"
+                    class="py-1 px-1 rounded-lg border text-center transition truncate bg-teal-500/25 border-teal-400/50 text-teal-200 font-semibold">1.Hadean</button>
+                <button data-era="1" id="eraBtn1"
+                    class="py-1 px-1 rounded-lg border border-slate-800 bg-slate-900/60 text-slate-400 hover:text-white text-center transition truncate">2.Archean</button>
+                <button data-era="2" id="eraBtn2"
+                    class="py-1 px-1 rounded-lg border border-slate-800 bg-slate-900/60 text-slate-400 hover:text-white text-center transition truncate">3.Oxidation</button>
+                <button data-era="3" id="eraBtn3"
+                    class="py-1 px-1 rounded-lg border border-slate-800 bg-slate-900/60 text-slate-400 hover:text-white text-center transition truncate">4.Cambrian</button>
+                <button data-era="4" id="eraBtn4"
+                    class="py-1 px-1 rounded-lg border border-slate-800 bg-slate-900/60 text-slate-400 hover:text-white text-center transition truncate">5.Carbonif</button>
+                <button data-era="5" id="eraBtn5"
+                    class="py-1 px-1 rounded-lg border border-slate-800 bg-slate-900/60 text-slate-400 hover:text-white text-center transition truncate">6.Impact</button>
+                <button data-era="6" id="eraBtn6"
+                    class="py-1 px-1 rounded-lg border border-slate-800 bg-slate-900/60 text-slate-400 hover:text-white text-center transition truncate">7.Sanctuary</button>
+            </div>
+
+            <div class="w-full h-1 bg-slate-900 rounded-full overflow-hidden">
+                <div id="eraProgressBar"
+                    class="h-full bg-gradient-to-r from-teal-400 via-emerald-400 to-amber-300 transition-all duration-300 w-0">
+                </div>
+            </div>
+        </div>
+
+        <div id="simToast"
+            class="opacity-0 transition-opacity duration-300 self-start hud-glass border-teal-400/50 text-teal-200 text-xs font-mono px-3 py-1.5 rounded-xl pointer-events-none">
+            7-Island Voxel Biosphere Initialized
+        </div>
+    </div>
+
+    <!-- EXHIBITION CHRONICLE & EVOLUTIONARY CHECKPOINT TIMELINE (BOTTOM-LEFT) -->
+    <div id="chronicleCard"
+        class="fixed bottom-16 sm:bottom-20 left-3 sm:left-4 z-20 w-[min(24rem,calc(100vw-24px))] pointer-events-none hidden md:block">
+        <div class="hud-glass rounded-2xl p-2.5 pointer-events-auto flex flex-col gap-1.5">
+            <div class="flex items-center justify-between gap-2">
+                <span class="text-[10px] font-mono uppercase tracking-wider text-teal-300 font-semibold">Live World
+                    Chronicle</span>
+                <select id="scenarioPresetSelect" title="Guided Scenario Preset"
+                    class="bg-slate-950/90 border border-amber-400/35 rounded-lg px-1.5 py-0.5 text-[9px] font-mono text-amber-200 focus:outline-none max-w-[138px]">
+                    <option value="">Scenario: Custom</option>
+                    <option value="ice_age">Ice Age Chill</option>
+                    <option value="heatwave">Heatwave Drought</option>
+                    <option value="cambrian_boom">Cambrian Boom</option>
+                    <option value="stone_to_iron">Stone-to-Iron Village</option>
+                    <option value="people_revolution">Industrial &amp; Mining Revolution</option>
+                </select>
+                <span id="chronicleTickBadge" class="text-[9px] font-mono text-slate-400 shrink-0">Tick 0</span>
+            </div>
+            <ul id="chronicleList"
+                class="flex flex-col gap-0.5 text-[10px] font-mono text-slate-300 max-h-14 overflow-y-auto hud-scroll">
+                <li class="text-teal-200/90">Voxel biosphere seeded across 7 islands.</li>
+            </ul>
+            <div class="pt-1 border-t border-slate-800/80 flex flex-col gap-1">
+                <div class="flex items-center justify-between text-[9px] font-mono text-amber-200/90">
+                    <span>Evolutionary Milestones (Click to Restore)</span>
+                    <button data-action="record-milestone"
+                        class="px-1.5 py-0.5 rounded bg-amber-500/20 hover:bg-amber-500/35 text-amber-200 border border-amber-400/35 text-[8px]">+Snapshot</button>
+                </div>
+                <div id="milestoneStrip"
+                    class="flex items-center gap-1 overflow-x-auto hud-scroll pb-0.5 font-mono text-[9px]">
+                    <span class="text-slate-500">Milestones appear as lineages evolve...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOP-RIGHT CONTROLS & INSPECTOR DRAWER STACK -->
+    <div id="topRightHud"
+        class="fixed top-3 right-3 sm:top-4 sm:right-4 z-20 flex flex-col items-end gap-2 max-h-[calc(100vh-110px)]">
+        <div class="flex items-center gap-1.5 flex-wrap justify-end relative">
+            <div class="hud-glass rounded-xl p-1 flex items-center gap-1">
+                <button id="btnToggle3D" data-action="view"
+                    class="px-2 py-1.5 rounded-lg hover:bg-teal-500/15 text-teal-300 text-xs font-mono font-semibold transition">
+                    <span id="hudViewMode">3D ISO</span>
+                </button>
+                <button data-action="camera" title="Center Camera on Active Island"
+                    class="px-2 py-1.5 rounded-lg hover:bg-slate-800/80 text-slate-200 text-xs font-mono transition">
+                    <span id="hudZoom">85%</span>
+                </button>
+                <button id="btnSensoryOverlay" data-action="toggle-sensory"
+                    title="Toggle Sensory Cone, Command Beams & Target Overlay"
+                    class="px-2 py-1.5 rounded-lg hover:bg-violet-500/15 text-violet-200 text-xs font-mono transition">
+                    <span id="hudSensoryLabel">Sensors: ON</span>
+                </button>
+                <button id="btnAudioToggle" data-action="toggle-audio" title="Toggle Procedural Web Audio (M)"
+                    class="px-2 py-1.5 rounded-lg hover:bg-teal-500/15 text-teal-200 text-xs font-mono transition">
+                    <span id="hudAudioLabel">Audio: OFF</span>
+                </button>
+            </div>
+
+            <div class="hud-glass rounded-xl p-1 flex items-center gap-1">
+                <button data-action="species-panel" title="25 Species Roster & Civilization"
+                    class="px-2 py-1.5 rounded-lg hover:bg-teal-500/15 text-teal-200 text-xs font-medium transition">
+                    <span>Species</span>
+                </button>
+                <button data-action="lineage" title="Lineage & Side-by-Side ANN Comparison"
+                    class="px-2 py-1.5 rounded-lg hover:bg-amber-500/15 text-amber-200 text-xs font-medium transition">
+                    <span>Lineage</span>
+                </button>
+                <button data-action="charts"
+                    class="px-2 py-1.5 rounded-lg hover:bg-cyan-500/15 text-cyan-200 text-xs font-medium transition">
+                    <span>Telemetry</span>
+                </button>
+                <button data-action="scale-guide" title="Explore physical world scale using a 1.7 m human baseline"
+                    class="px-2 py-1 rounded-lg border border-sky-400/30 bg-sky-500/10 text-sky-200 text-[10px] font-mono">Scale</button>
+                <button data-action="interior-mode" title="Toggle furnished house cutaway interiors"
+                    class="px-2 py-1 rounded-lg border border-amber-400/30 bg-amber-500/10 text-amber-200 text-[10px] font-mono">House Interior</button>
+                <button data-action="research" title="Run repeatable experiments and export research reports"
+                    class="px-2 py-1.5 rounded-lg hover:bg-cyan-500/15 text-cyan-200 text-xs font-semibold transition">
+                    <span>Research</span>
+                </button>
+                <button data-action="applications" title="Practical real-world applications of this simulation"
+                    class="px-2 py-1.5 rounded-lg hover:bg-emerald-500/15 text-emerald-200 text-xs font-semibold transition">
+                    <span>Applications</span>
+                </button>
+                <button data-action="params"
+                    class="px-2 py-1.5 rounded-lg hover:bg-slate-800/80 text-slate-200 text-xs font-medium transition">
+                    <span>Lab</span>
+                </button>
+                <button id="btnMoreMenu" data-action="toggle-more-menu"
+                    class="px-2 py-1.5 rounded-lg hover:bg-slate-800/80 text-slate-300 text-xs font-mono transition">
+                    <span>More &#9662;</span>
+                </button>
+            </div>
+
+            <div id="moreMenuPopover"
+                class="hidden absolute top-11 right-0 z-40 hud-glass rounded-xl p-1.5 flex flex-col gap-1 min-w-[165px] font-mono text-xs shadow-2xl">
+                <button data-action="challenges"
+                    class="w-full text-left px-2.5 py-1.5 rounded-lg hover:bg-emerald-500/15 text-emerald-200 transition">Challenges</button>
+                <button data-action="trigger-disaster"
+                    class="w-full text-left px-2.5 py-1.5 rounded-lg hover:bg-rose-500/20 text-rose-300 transition">Trigger
+                    Wildfire / Eruption</button>
+                <button id="btnExhibition" data-action="exhibition"
+                    class="w-full text-left px-2.5 py-1.5 rounded-lg hover:bg-amber-500/15 text-amber-200 transition">
+                    <span id="hudExhibitionLabel">Exhibition: OFF</span>
+                </button>
+                <button id="btnToggleZones" data-action="zones"
+                    class="w-full text-left px-2.5 py-1.5 rounded-lg hover:bg-cyan-500/15 text-cyan-200 transition">Toggle
+                    Island Pins</button>
+                <button data-action="shortcuts"
+                    class="w-full text-left px-2.5 py-1.5 rounded-lg hover:bg-slate-800 text-slate-200 transition">Shortcuts
+                    (?)</button>
+            </div>
+        </div>
+
+        <div id="rightDrawerStack"
+            class="hud-scroll flex flex-col gap-2.5 overflow-y-auto pr-0.5 w-[min(23rem,calc(100vw-24px))] max-h-[calc(100vh-116px)]">
+
+            <!-- 1. ORGANISM INSPECTOR CARD -->
+            <div id="inspectorCard" class="hidden hud-glass hud-card-accent rounded-2xl p-3.5 transition-all"
+                role="region" aria-label="Organism inspector">
+                <header class="insp-head">
+                    <span id="dnaSpeciesDot" class="insp-dot"></span>
+                    <div class="insp-ident">
+                        <div class="insp-title-row">
+                            <h2 id="dnaSpeciesTitle" class="insp-title">Organism Inspector</h2>
+                            <span id="dnaLeaderBadge" class="hidden insp-leader">Cognitive</span>
+                        </div>
+                        <span id="dnaDietBadge" class="insp-sub">LITHOSPHERE &bull; HERBIVORE</span>
+                    </div>
+                    <span id="dnaIdBadge" class="insp-id">GEN-0000</span>
+                    <div class="flex items-center gap-0.5 shrink-0">
+                        <button data-action="inspect-prev" title="Previous Specimen (Tab)"
+                            class="w-7 h-8 rounded-lg bg-slate-900/80 hover:bg-slate-800 text-teal-200 border border-teal-500/30 font-mono text-xs">&lsaquo;</button>
+                        <button data-action="inspect-next" title="Next Specimen (Tab)"
+                            class="w-7 h-8 rounded-lg bg-slate-900/80 hover:bg-slate-800 text-teal-200 border border-teal-500/30 font-mono text-xs">&rsaquo;</button>
+                        <button data-action="deselect" class="insp-close" title="Close inspector (Esc)"
+                            aria-label="Close inspector">&times;</button>
+                    </div>
+                </header>
+
+                <div class="insp-body">
+                    <div class="insp-col">
+                        <section class="insp-card" aria-label="Vitals">
+                            <div class="insp-vital">
+                                <div class="insp-vital-top">
+                                    <span class="insp-k">Stage <b id="dnaLifeStage" class="insp-stage">MATURE
+                                            ADULT</b></span>
+                                    <span id="dnaAgeText" class="insp-muted">Age 0d &bull; 100%</span>
+                                </div>
+                                <div class="insp-bar">
+                                    <div id="dnaGrowthBar"
+                                        class="h-full bg-gradient-to-r from-sky-400 via-cyan-300 to-amber-300 transition-all duration-150 w-full">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="insp-vital">
+                                <div class="insp-vital-top">
+                                    <span class="insp-k">Energy (ATP)</span>
+                                    <span id="dnaEnergyText" class="insp-big">100%</span>
+                                </div>
+                                <div class="insp-bar">
+                                    <div id="dnaEnergyBar"
+                                        class="h-full bg-gradient-to-r from-rose-400 via-amber-300 to-emerald-400 transition-all duration-150 w-3/4">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="insp-vital">
+                                <div class="insp-vital-top">
+                                    <span class="insp-k">Hydration</span>
+                                    <span id="dnaHydrationText"
+                                        class="text-xs font-mono font-bold text-sky-300">100%</span>
+                                </div>
+                                <div class="insp-bar">
+                                    <div id="dnaHydrationBar"
+                                        class="h-full bg-gradient-to-r from-sky-500 to-cyan-300 transition-all duration-150 w-full">
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <div class="insp-actions">
+                            <button id="btnFollowBot" data-action="follow" class="insp-btn insp-btn-follow"
+                                aria-pressed="false">
+                                <span id="textFollowBot">Follow: OFF</span>
+                            </button>
+                            <button id="btnFpvBot" data-action="fpv" class="insp-btn insp-btn-fpv" aria-pressed="false">
+                                <span id="textFpvBot">FPV: OFF</span>
+                            </button>
+                            <button data-action="open-lab" class="insp-btn insp-btn-lab">
+                                <span>Cryo-Lab &nearr;</span>
+                            </button>
+                        </div>
+
+                        <div class="insp-facts">
+                            <div class="insp-fact"><span class="insp-fact-k">Generation</span><span id="dnaGen"
+                                    class="insp-fact-v text-amber-400">Gen 1</span></div>
+                            <div class="insp-fact"><span class="insp-fact-k">Fitness</span><span id="dnaChildren"
+                                    class="insp-fact-v text-emerald-400">0.0</span></div>
+                            <div class="insp-fact"><span class="insp-fact-k">Clade / Variant</span><span
+                                    id="dnaSphereAffinity" class="insp-fact-v text-cyan-300">LAND</span></div>
+                            <div class="insp-fact"><span class="insp-fact-k">Speed</span><span id="dnaSpeed"
+                                    class="insp-fact-v text-sky-400">0.00</span></div>
+                            <div class="insp-fact"><span class="insp-fact-k">Sensors</span><span id="dnaVision"
+                                    class="insp-fact-v text-violet-400">0 px</span></div>
+                            <div class="insp-fact"><span class="insp-fact-k">Stress / Res</span><span id="dnaStressRes"
+                                    class="insp-fact-v text-rose-300">10% / 50%</span></div>
+                            <div class="insp-fact"><span class="insp-fact-k">Defense</span><span id="survivalDefense"
+                                    class="insp-fact-v text-amber-300">GROUP</span></div>
+                            <div class="insp-fact"><span class="insp-fact-k">Escapes</span><span id="survivalEscapes"
+                                    class="insp-fact-v text-emerald-400">0</span></div>
+                            <div class="insp-fact"><span class="insp-fact-k">Job / Role</span><span id="dnaFactionBadge"
+                                    class="insp-fact-v text-teal-300">FORAGER</span></div>
+                        </div>
+
+                        <!-- HUMAN ANN EVOLUTION + COMMAND & REVOLUTION PANEL -->
+                        <div id="humanEvolutionPanel"
+                            class="hidden px-3 py-2.5 rounded-xl bg-amber-950/40 border border-amber-400/35 font-mono flex flex-col gap-2">
+                            <div>
+                                <div class="flex justify-between items-center text-[9px] mb-1">
+                                    <span class="text-amber-300 font-bold" id="humanAnnStageName">Stage 0: Tabula
+                                        Rasa</span>
+                                    <span class="text-cyan-300" id="humanAnnTopo">2&rarr;2&rarr;2</span>
+                                </div>
+                                <div class="w-full h-1.5 bg-slate-900 rounded-full overflow-hidden mb-1.5">
+                                    <div id="humanAnnProgressBar"
+                                        class="h-full bg-gradient-to-r from-amber-400 via-teal-400 to-cyan-300 transition-all duration-200 w-0">
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between gap-2 text-[9px] text-slate-300">
+                                    <span id="humanAnnSynapses">Synapses: 8 &bull; Learned: 0</span>
+                                    <div class="flex items-center gap-1 shrink-0">
+                                        <button data-action="train-human"
+                                            class="px-2 py-1 rounded bg-amber-500/25 hover:bg-amber-500/40 text-amber-200 border border-amber-400/45 transition">Teach
+                                            ANN</button>
+                                        <button data-action="train-all-humans"
+                                            class="px-2 py-1 rounded bg-teal-500/25 hover:bg-teal-500/40 text-teal-200 border border-teal-400/45 transition">All
+                                            Humans</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="border-t border-amber-400/20 pt-2 flex flex-col gap-1.5">
+                                <div class="flex items-center justify-between text-[9px]">
+                                    <span class="text-cyan-300 font-bold uppercase">Human Task &amp; Revolution</span>
+                                    <span id="humanCmdStats" class="text-slate-300">Cmds: 0 &bull; Revs: 0</span>
+                                </div>
+                                <div class="flex items-center gap-1.5">
+                                    <select id="humanTaskSelect"
+                                        class="flex-1 min-w-0 bg-slate-950/90 border border-cyan-500/35 rounded-lg px-1.5 py-1 text-[10px] text-cyan-200 focus:outline-none">
+                                        <option value="Tend Fire">Task: Tend Fire &amp; Hearth</option>
+                                        <option value="Mine Ore">Task: Mining Sector (Ore)</option>
+                                        <option value="Work Industry">Task: Work Industry</option>
+                                        <option value="Harvest Fruit">Task: Farm &amp; Harvest</option>
+                                        <option value="Build Shelter">Task: Build Workshop</option>
+                                        <option value="Explore Archipelago">Task: Scout Islands</option>
+                                    </select>
+                                    <button data-action="issue-human-task"
+                                        class="px-2 py-1 rounded-lg bg-cyan-500/25 hover:bg-cyan-500/40 text-cyan-100 border border-cyan-400/45 text-[10px] font-semibold shrink-0 transition">
+                                        Assign Job
+                                    </button>
+                                </div>
+                                <button data-action="spark-revolution"
+                                    class="w-full py-1.5 px-2 rounded-lg bg-gradient-to-r from-amber-500/30 to-orange-500/25 hover:from-amber-500/45 hover:to-orange-500/40 text-amber-100 border border-amber-400/50 text-[10px] font-bold tracking-wide transition">
+                                    Advance Revolution (Fire &bull; Mining &bull; Industry)
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="insp-col">
+                        <details class="insp-sec" open>
+                            <summary class="insp-sum">
+                                <span class="insp-sum-title">Mind</span>
+                                <span id="neuralStateLabel" class="insp-chip">FORAGING</span>
+                            </summary>
+                            <div class="insp-sec-body">
+                                <div class="flex items-center justify-between gap-1.5">
+                                    <span id="neuralArchLabel" class="insp-muted truncate">ANN BRAIN
+                                        (5&rarr;6&rarr;2)</span>
+                                    <div class="flex items-center gap-1 shrink-0">
+                                        <button data-action="neuro-add-node" title="Add Hidden Neuron"
+                                            class="px-1.5 py-0.5 rounded bg-teal-500/20 hover:bg-teal-500/35 text-teal-200 border border-teal-400/35 font-mono text-[9px]">+Node</button>
+                                        <button data-action="neuro-add-conn" title="Add Synapse Connection"
+                                            class="px-1.5 py-0.5 rounded bg-sky-500/20 hover:bg-sky-500/35 text-sky-200 border border-sky-400/35 font-mono text-[9px]">+Conn</button>
+                                        <button data-action="ann-reward" title="Reinforce Positive Behavior"
+                                            class="px-1.5 py-0.5 rounded bg-emerald-500/20 hover:bg-emerald-500/35 text-emerald-200 border border-emerald-400/35 font-mono text-[9px]">+Reward</button>
+                                        <button data-action="ann-punish" title="Penalize Current Behavior"
+                                            class="px-1.5 py-0.5 rounded bg-rose-500/20 hover:bg-rose-500/35 text-rose-200 border border-rose-400/35 font-mono text-[9px]">&minus;Punish</button>
+                                    </div>
+                                </div>
+                                <canvas id="neuralCanvas" width="300" height="130" class="insp-canvas"></canvas>
+                                <div id="dnaThoughtReadout" class="insp-thought">Mind: Evaluating local foraging &amp;
+                                    shelter cues</div>
+                            </div>
+                        </details>
+
+                        <details class="insp-sec" open>
+                            <summary class="insp-sum">
+                                <span class="insp-sum-title">Behaviour</span>
+                                <span class="insp-muted">Goal &amp; niche</span>
+                            </summary>
+                            <div class="insp-sec-body">
+                                <label class="insp-field" for="dnaGoalSelect">
+                                    <span class="insp-k">Goal</span>
+                                    <select id="dnaGoalSelect" class="insp-select">
+                                        <option value="Forage &amp; Thrive">Forage &amp; Thrive</option>
+                                        <option value="Build &amp; Innovate">Build &amp; Innovate</option>
+                                        <option value="Explore Archipelago">Explore Archipelago</option>
+                                        <option value="Guard Colony">Guard Colony</option>
+                                        <option value="Patrol Reef &amp; Currents">Patrol Reef &amp; Currents</option>
+                                        <option value="Seek Spring &amp; Heal">Seek Spring &amp; Heal</option>
+                                        <option value="Tend Fire">Tend Fire &amp; Hearth</option>
+                                        <option value="Mine Ore">Mine Ore</option>
+                                        <option value="Work Industry">Work Industry</option>
+                                        <option value="Tend Orchard">Tend Orchard</option>
+                                    </select>
+                                </label>
+                                <div class="insp-niche">
+                                    <span class="insp-k">Ecological niche</span>
+                                    <span id="dnaEcology" class="insp-niche-text">Grazing herbivore maintaining meadow
+                                        balance</span>
+                                </div>
+                            </div>
+                        </details>
+
+                        <details class="insp-sec">
+                            <summary class="insp-sum">
+                                <span class="insp-sum-title">DNA &amp; Speciation</span>
+                                <span id="dnaMindGrowthText" class="insp-muted">Mind IQ: 1.00</span>
+                            </summary>
+                            <div class="insp-sec-body">
+                                <div class="insp-dna">
+                                    <button data-action="dna-speed" class="insp-btn insp-btn-speed">+Speed</button>
+                                    <button data-action="dna-vision" class="insp-btn insp-btn-sensor">+Sensor</button>
+                                    <button data-action="dna-mutate" class="insp-btn insp-btn-mutate">Speciate</button>
+                                </div>
+                            </div>
+                        </details>
+                    </div>
+                </div>
+            </div>
+
+            <!-- LINEAGE & SIDE-BY-SIDE BRAIN/ORGANISM COMPARISON PANEL -->
+            <div id="lineageCard" class="hidden hud-glass rounded-2xl p-3.5 flex flex-col gap-2 font-mono text-[10px]">
+                <div class="flex items-center justify-between gap-2">
+                    <h2 class="text-[11px] font-bold uppercase tracking-wider text-amber-200">Lineage &amp; Brain
+                        Compare</h2>
+                    <div class="flex items-center gap-1">
+                        <button data-action="evolve-gen" title="Run Fitness Selection & Neuroevolution Step"
+                            class="px-2 py-0.5 rounded bg-teal-500/20 hover:bg-teal-500/35 text-teal-200 border border-teal-400/40 text-[9px]">Evolve
+                            Gen</button>
+                        <button data-action="pick-compare-peer"
+                            class="px-2 py-0.5 rounded bg-amber-500/20 hover:bg-amber-500/35 text-amber-200 border border-amber-400/40 text-[9px]">Next
+                            Peer</button>
+                    </div>
+                </div>
+                <div id="lineageChainBox"
+                    class="px-2.5 py-1.5 rounded-xl bg-slate-950/75 border border-slate-800 text-teal-200">
+                    Select an organism to trace lineage &amp; compare ANN activations.
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div id="compareLeftBox"
+                        class="p-2 rounded-xl bg-slate-950/75 border border-teal-500/30 text-slate-200 flex flex-col gap-1">
+                        <span class="text-teal-300 font-bold">Specimen A</span>
+                        <span>&mdash;</span>
+                    </div>
+                    <div id="compareRightBox"
+                        class="p-2 rounded-xl bg-slate-950/75 border border-amber-500/30 text-slate-200 flex flex-col gap-1">
+                        <span class="text-amber-300 font-bold">Specimen B</span>
+                        <span>&mdash;</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- INTERACTIVE EXHIBITION CHALLENGES PANEL -->
+            <div id="challengesCard"
+                class="hidden hud-glass rounded-2xl p-3.5 flex flex-col gap-2 font-mono text-[10px]">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-[11px] font-bold uppercase tracking-wider text-emerald-300">Exhibition Challenges
+                    </h2>
+                    <span id="challengesBadge" class="text-amber-300 font-semibold">0/5 Done</span>
+                </div>
+                <div id="challengesList" class="flex flex-col gap-1.5"></div>
+            </div>
+
+            <!-- 2. 25-SPECIES COHORTS & CIVILIZATION PROGRESSION -->
+            <div id="biodiversityCard" class="hidden hud-glass rounded-2xl p-3.5">
+                <div class="flex items-center justify-between mb-2">
+                    <h2 class="text-[11px] font-bold uppercase tracking-wider text-slate-200">Humans &amp; 25 Species
+                    </h2>
+                    <span
+                        class="text-[9px] font-mono text-teal-300 bg-teal-500/10 border border-teal-400/25 px-1.5 py-0.5 rounded">7
+                        ISLANDS</span>
+                </div>
+                <div
+                    class="mb-2 px-2.5 py-2 rounded-xl bg-gradient-to-r from-amber-950/45 to-teal-950/45 border border-amber-400/30 text-[10px] font-mono">
+                    <div class="flex justify-between text-amber-200 font-semibold mb-1">
+                        <span id="cultureStageTitle">Stage 0: Foraging Instincts</span>
+                        <span id="cultureXpText">0 XP</span>
+                    </div>
+                    <div class="w-full h-1.5 bg-slate-900 rounded-full overflow-hidden">
+                        <div id="cultureXpBar"
+                            class="h-full bg-gradient-to-r from-amber-400 to-teal-300 transition-all duration-200 w-0">
+                        </div>
+                    </div>
+                </div>
+                <div id="survivalSummaryText"
+                    class="mb-2 px-2.5 py-1.5 rounded-xl bg-slate-950/75 border border-slate-800/85 text-[10px] font-mono text-cyan-200">
+                    Peak Gen: 1 &bull; Top: Human &bull; Niches: 25/25
+                </div>
+                <div id="shelterBreakdownText"
+                    class="mb-2 px-2.5 py-1.5 rounded-xl bg-slate-950/60 border border-emerald-500/20 text-[9px] font-mono text-emerald-200">
+                    Shelters: Camp 0 &bull; Tower 0 &bull; Granary 0 &bull; Beacon 0
+                </div>
+                <div class="flex flex-col gap-1.5 text-[11px] font-mono max-h-44 overflow-y-auto hud-scroll pr-1"
+                    id="speciesRosterList"></div>
+            </div>
+
+            <!-- 3. POPULATION TELEMETRY -->
+            <div id="telemetryCard" class="hidden hud-glass rounded-2xl p-3.5 flex flex-col gap-2">
+                <div class="flex items-center justify-between gap-2">
+                    <h2 class="text-[11px] font-bold uppercase tracking-wider text-slate-100">Population Dynamics</h2>
+                    <div class="flex items-center gap-1 font-mono text-[9px]">
+                        <button data-chart-filter="all" id="chartFilterAll"
+                            class="px-1.5 py-0.5 rounded bg-teal-500/25 text-teal-200 border border-teal-400/40">All</button>
+                        <button data-chart-filter="land" id="chartFilterLand"
+                            class="px-1.5 py-0.5 rounded bg-slate-900 text-slate-300 border border-slate-700">Land</button>
+                        <button data-chart-filter="ocean" id="chartFilterOcean"
+                            class="px-1.5 py-0.5 rounded bg-slate-900 text-slate-300 border border-slate-700">Ocean</button>
+                        <button data-chart-filter="sky" id="chartFilterSky"
+                            class="px-1.5 py-0.5 rounded bg-slate-900 text-slate-300 border border-slate-700">Sky</button>
+                    </div>
+                    <span id="chartPopulation" class="text-xs font-mono font-bold text-teal-300">100M</span>
+                </div>
+                <div class="relative w-full h-28 rounded-xl bg-slate-950/75 border border-slate-800 overflow-hidden">
+                    <canvas id="chartCanvas" width="520" height="180" class="w-full h-full block"></canvas>
+                </div>
+                <div class="flex items-center justify-between gap-1.5 font-mono text-[9px]">
+                    <span class="text-slate-400 truncate" id="chartEventMarkerCount">Markers: 0</span>
+                    <div class="flex items-center gap-1 shrink-0">
+                        <button data-action="export-csv"
+                            class="px-2 py-0.5 rounded bg-slate-900 hover:bg-slate-800 text-cyan-300 border border-cyan-500/30">CSV</button>
+                        <button data-action="export-json"
+                            class="px-2 py-0.5 rounded bg-slate-900 hover:bg-slate-800 text-emerald-300 border border-emerald-500/30">JSON</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. ENVIRONMENTAL WHAT-IF LAB, SEED SHARE & CHECKPOINTS -->
+            <div id="paramsCard" class="hidden hud-glass rounded-2xl p-3.5 flex flex-col gap-2.5">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-[11px] font-bold uppercase tracking-wider text-slate-200">What-If &amp; Experiment
+                        Lab</h2>
+                    <button data-action="reset"
+                        class="text-[10px] font-mono px-2 py-1 rounded-lg bg-teal-500/20 hover:bg-teal-500/30 text-teal-200 border border-teal-400/40 transition">
+                        New Seed
+                    </button>
+                </div>
+
+                <!-- Shareable / Reproducible Seed & State Code -->
+                <div
+                    class="flex flex-col gap-1 font-mono text-[10px] p-2 rounded-xl bg-slate-950/75 border border-cyan-500/25">
+                    <div class="flex items-center justify-between text-[9px] text-cyan-300">
+                        <span>Seed &amp; State Code</span>
+                        <span id="currentSeedBadge" class="text-slate-400">Seed 2026.88</span>
+                    </div>
+                    <div class="flex items-center gap-1">
+                        <input id="seedStateInput" type="text" placeholder="dl1|..."
+                            class="flex-1 min-w-0 bg-slate-900/90 border border-slate-700 rounded-lg px-2 py-1 text-[10px] text-amber-200 focus:outline-none">
+                        <button data-action="copy-seed-code"
+                            class="px-2 py-1 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/35 text-cyan-200 border border-cyan-400/35 text-[9px]">Copy</button>
+                        <button data-action="apply-seed-code"
+                            class="px-2 py-1 rounded-lg bg-teal-500/20 hover:bg-teal-500/35 text-teal-200 border border-teal-400/35 text-[9px]">Load</button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <div class="flex justify-between text-[11px] mb-1">
+                            <span class="text-slate-300">Time</span>
+                            <span id="valTimeOfDay" class="font-mono text-sky-300">12:00</span>
+                        </div>
+                        <input id="sliderTimeOfDay" type="range" min="0" max="23.9" step="0.2" value="12" class="w-full"
+                            data-input-action="sliders">
+                    </div>
+                    <div>
+                        <span class="text-slate-300 text-[11px] block mb-1">Weather</span>
+                        <select id="selectWeather"
+                            class="w-full bg-slate-950/90 border border-slate-700 rounded-lg px-2 py-1 text-[11px] font-mono text-sky-200 focus:outline-none">
+                            <option value="clear">Clear Sky</option>
+                            <option value="rain">Light Rain</option>
+                            <option value="storm">Monsoon Storm</option>
+                            <option value="mist">Misty Fog</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="flex justify-between text-[11px] mb-1">
+                        <span class="text-slate-300">Thermal / Aridity Shift</span>
+                        <span id="valTempShift" class="font-mono text-amber-300">0&deg;C (Optimal)</span>
+                    </div>
+                    <input id="sliderTempShift" type="range" min="-15" max="15" value="0" class="w-full"
+                        data-input-action="sliders">
+                </div>
+
+                <div>
+                    <div class="flex justify-between text-[11px] mb-1">
+                        <span class="text-slate-300">Orchard &amp; Plankton Growth</span>
+                        <span id="valFoodRate" class="font-mono text-emerald-400">Balanced</span>
+                    </div>
+                    <input id="sliderFoodRate" type="range" min="1" max="10" value="6" class="w-full"
+                        data-input-action="sliders">
+                </div>
+
+                <div>
+                    <div class="flex justify-between text-[11px] mb-1">
+                        <span class="text-slate-300">ANN Mutation Rate</span>
+                        <span id="valMutation" class="font-mono text-sky-400">30%</span>
+                    </div>
+                    <input id="sliderMutation" type="range" min="0" max="80" value="30" class="w-full"
+                        data-input-action="sliders">
+                </div>
+
+                <div>
+                    <div class="flex justify-between text-[11px] mb-1">
+                        <span class="text-slate-300">Metabolic Burn Rate</span>
+                        <span id="valBurnRate" class="font-mono text-amber-400">1.0x</span>
+                    </div>
+                    <input id="sliderBurnRate" type="range" min="5" max="25" value="10" class="w-full"
+                        data-input-action="sliders">
+                </div>
+
+                <div class="pt-2 border-t border-slate-800/80 flex flex-col gap-2 text-xs">
+                    <label class="flex items-center justify-between cursor-pointer">
+                        <span class="text-slate-300 text-[11px]">Organism Thought Bubbles</span>
+                        <input type="checkbox" id="toggleBubbles" checked class="sr-only peer"
+                            data-toggle="thought-bubbles">
+                        <div
+                            class="w-8 h-4 bg-slate-800 rounded-full peer peer-checked:bg-teal-500 relative after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:after:translate-x-4">
+                        </div>
+                    </label>
+
+                    <label class="flex items-center justify-between cursor-pointer">
+                        <span class="text-slate-300 text-[11px]">Atmosphere Cloud Shadows</span>
+                        <input type="checkbox" id="toggleClouds" checked class="sr-only peer"
+                            data-toggle="atmosphere-clouds">
+                        <div
+                            class="w-8 h-4 bg-slate-800 rounded-full peer peer-checked:bg-teal-500 relative after:content-[''] after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:after:translate-x-4">
+                        </div>
+                    </label>
+
+                    <button id="btnHistoricalEvent" data-action="event"
+                        class="mt-1 w-full py-2 px-3 rounded-xl text-[11px] font-mono font-semibold bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 border border-amber-400/50 transition flex items-center justify-center gap-1.5">
+                        <span id="historicalEventLabel" class="truncate">Trigger: Volcanic Surge</span>
+                    </button>
+
+                    <div class="flex flex-col gap-1.5 pt-1 font-mono text-[10px]">
+                        <div class="flex items-center gap-1">
+                            <input id="checkpointSlotName" type="text" placeholder="Slot label (e.g. Run A)"
+                                class="flex-1 min-w-0 bg-slate-950/90 border border-slate-700 rounded-lg px-2 py-1 text-[10px] text-slate-200 focus:outline-none">
+                            <select id="checkpointSlotSelect"
+                                class="bg-slate-950/90 border border-slate-700 rounded-lg px-1.5 py-1 text-[10px] text-cyan-200 focus:outline-none max-w-[115px]">
+                                <option value="slot_1">Slot 1</option>
+                                <option value="slot_2">Slot 2</option>
+                                <option value="slot_3">Slot 3</option>
+                            </select>
+                        </div>
+                        <div class="grid grid-cols-4 gap-1">
+                            <button data-action="save-checkpoint"
+                                class="py-1.5 px-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-cyan-300 border border-cyan-500/30 transition">Save</button>
+                            <button data-action="restore-checkpoint"
+                                class="py-1.5 px-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-amber-300 border border-amber-500/30 transition">Load</button>
+                            <button id="btnUndoCheckpoint" data-action="undo-checkpoint"
+                                class="py-1.5 px-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-rose-300 border border-rose-500/30 transition">Undo</button>
+                            <button data-action="export-json"
+                                class="py-1.5 px-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-emerald-300 border border-emerald-500/30 transition">JSON</button>
+                        </div>
+                    </div>
+                    <button data-action="reset-humans"
+                        class="w-full py-1.5 px-2 rounded-lg bg-rose-500/15 hover:bg-rose-500/25 text-rose-200 border border-rose-400/35 font-mono text-[10px] transition">
+                        Reset Humans to Nothing (2&rarr;2&rarr;2 Tabula Rasa)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- KEYBOARD SHORTCUTS POPOVER CARD -->
+    <div id="shortcutsModal"
+        class="hidden fixed bottom-20 right-3 sm:right-4 z-30 w-[min(20rem,calc(100vw-24px))] hud-glass rounded-2xl p-3.5 font-mono text-[10px] text-slate-200">
+        <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-bold text-cyan-300">Keyboard Shortcuts</span>
+            <button data-action="shortcuts" class="text-slate-400 hover:text-white text-sm">&times;</button>
+        </div>
+        <div class="grid grid-cols-2 gap-y-1.5 gap-x-2">
+            <span class="text-teal-300">Space</span><span>Pause / Resume</span>
+            <span class="text-teal-300">1 &ndash; 4</span><span>Cam Presets</span>
+            <span class="text-teal-300">5</span><span>Cycle Speed (1x/2x/5x)</span>
+            <span class="text-teal-300">F</span><span>Follow Selected</span>
+            <span class="text-teal-300">V</span><span>Toggle FPV Mode</span>
+            <span class="text-teal-300">R</span><span>Spark Revolution</span>
+            <span class="text-teal-300">Tab</span><span>Cycle Specimen</span>
+            <span class="text-teal-300">M</span><span>Toggle Web Audio</span>
+            <span class="text-teal-300">Esc</span><span>Close / Deselect</span>
+        </div>
+    </div>
+
+    <!-- BOTTOM-CENTER INTERACTIVE TOOLBAR -->
+    <div class="fixed bottom-3 sm:bottom-4 left-1/2 -translate-x-1/2 z-20 max-w-[97vw]">
+        <div class="hud-glass rounded-2xl p-1.5 flex items-center gap-1 sm:gap-1.5 overflow-x-auto shadow-2xl">
+            <button id="toolInspect" data-mode="inspect"
+                class="px-2.5 sm:px-3 py-2 rounded-xl text-xs font-medium transition flex items-center gap-1.5 shrink-0 bg-teal-500/25 text-teal-200 border border-teal-400/40">
+                <span>Inspect</span>
+            </button>
+
+            <button id="toolFood" data-mode="food"
+                class="px-2.5 sm:px-3 py-2 rounded-xl text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800/60 transition flex items-center gap-1.5 shrink-0">
+                <span class="w-2.5 h-2.5 rounded-full bg-rose-400 shadow-[0_0_8px_#fb7185]"></span>
+                <span>Drop Fruit</span>
+            </button>
+
+            <div class="flex items-center bg-slate-950/85 rounded-xl border border-slate-700/80 p-0.5 shrink-0">
+                <button id="toolSpawn" data-mode="spawn"
+                    class="px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white transition flex items-center gap-1">
+                    <span>+ Spawn:</span>
+                </button>
+                <select id="spawnSpeciesSelect" data-mode-on-change="spawn"
+                    class="bg-transparent text-xs font-mono text-amber-300 font-semibold pr-2 py-1 focus:outline-none cursor-pointer max-w-[145px]">
+                    <option value="human" class="bg-slate-900 text-amber-200 font-bold">Human (Commander)</option>
+                    <option value="capybara" class="bg-slate-900 text-amber-300">Capybara (Meadow)</option>
+                    <option value="reddeer" class="bg-slate-900 text-amber-200">Red Deer (Terrace)</option>
+                    <option value="bison" class="bg-slate-900 text-amber-300">Wild Bison (Herd)</option>
+                    <option value="jaguar" class="bg-slate-900 text-rose-300">Jaguar (Apex)</option>
+                    <option value="snowleopard" class="bg-slate-900 text-rose-200">Snow Leopard (Peak)</option>
+                    <option value="woodlouse" class="bg-slate-900 text-orange-300">Woodlouse (Soil)</option>
+                    <option value="earthworm" class="bg-slate-900 text-orange-200">Earthworm (Humus)</option>
+                    <option value="armadillo" class="bg-slate-900 text-amber-400">Armadillo (Burrow)</option>
+                    <option value="pangolin" class="bg-slate-900 text-orange-300">Pangolin (Forager)</option>
+                    <option value="molerat" class="bg-slate-900 text-stone-300">Mole Rat (Tunnel)</option>
+                    <option value="honeybee" class="bg-slate-900 text-cyan-200">Honeybee (Pollinator)</option>
+                    <option value="hummingbird" class="bg-slate-900 text-teal-200">Hummingbird (Nectar)</option>
+                    <option value="albatross" class="bg-slate-900 text-sky-200">Albatross (Soarer)</option>
+                    <option value="falcon" class="bg-slate-900 text-rose-300">Peregrine Falcon</option>
+                    <option value="flyingsquirrel" class="bg-slate-900 text-cyan-300">Flying Squirrel</option>
+                    <option value="clownfish" class="bg-slate-900 text-sky-300">Clownfish (Reef)</option>
+                    <option value="moonjelly" class="bg-slate-900 text-violet-300">Moon Jelly (Tide)</option>
+                    <option value="seaotter" class="bg-slate-900 text-teal-300">Sea Otter (Lagoon)</option>
+                    <option value="mantaray" class="bg-slate-900 text-indigo-300">Manta Ray (Pelagic)</option>
+                    <option value="nautilus" class="bg-slate-900 text-purple-300">Nautilus (Deep Sea)</option>
+                    <option value="seaturtle" class="bg-slate-900 text-emerald-300">Sea Turtle (Reef)</option>
+                    <option value="dolphin" class="bg-slate-900 text-sky-300">Dolphin (Pod)</option>
+                    <option value="octopus" class="bg-slate-900 text-rose-300">Reef Octopus</option>
+                    <option value="whale" class="bg-slate-900 text-indigo-300">Blue Whale (Ocean)</option>
+                </select>
+            </div>
+
+            <button id="toolToxin" data-mode="toxin"
+                class="px-2.5 sm:px-3 py-2 rounded-xl text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800/60 transition flex items-center gap-1.5 shrink-0">
+                <span class="w-2.5 h-2.5 rounded-full bg-sky-400"></span>
+                <span>Add Spring</span>
+            </button>
+
+            <div class="flex items-center bg-slate-950/85 rounded-xl border border-slate-700/80 p-0.5 shrink-0">
+                <button id="toolBuild" data-mode="build"
+                    class="px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white transition flex items-center gap-1">
+                    <span>+ Build:</span>
+                </button>
+                <select id="buildStructureSelect" data-mode-on-change="build"
+                    class="bg-transparent text-xs font-mono text-emerald-300 font-semibold pr-2 py-1 focus:outline-none cursor-pointer max-w-[125px]">
+                    <option value="campfire" class="bg-slate-900 text-orange-300">Fire Hearth</option>
+                    <option value="camp" class="bg-slate-900 text-amber-300">Timber House</option>
+                    <option value="granary" class="bg-slate-900 text-emerald-300">Farm Granary</option>
+                    <option value="mine" class="bg-slate-900 text-slate-300">Ore Mine Shaft</option>
+                    <option value="industry" class="bg-slate-900 text-orange-400">Brick Foundry</option>
+                    <option value="tower" class="bg-slate-900 text-sky-300">Watchtower</option>
+                    <option value="beacon" class="bg-slate-900 text-purple-300">Research Lab</option>
+                </select>
+            </div>
+
+            <button data-action="spark-revolution"
+                class="px-2.5 sm:px-3 py-2 rounded-xl text-xs font-semibold bg-amber-500/20 hover:bg-amber-500/35 text-amber-200 border border-amber-400/45 transition flex items-center gap-1.5 shrink-0">
+                <span>+Revolution</span>
+            </button>
+
+            <div class="h-6 w-px bg-slate-700/80 mx-0.5 shrink-0"></div>
+
+            <button id="btnPlayPause" data-action="pause"
+                class="px-3 py-2 rounded-xl text-xs font-semibold bg-teal-400 hover:bg-teal-300 text-slate-950 transition flex items-center gap-1.5 shrink-0 shadow-[0_0_15px_rgba(45,212,191,0.35)]">
+                <span id="textPlayPause">Pause</span>
+            </button>
+
+            <div
+                class="flex items-center bg-slate-950/80 rounded-xl p-0.5 border border-slate-800 shrink-0 font-mono text-xs">
+                <button data-speed="1" id="spd1"
+                    class="px-2.5 py-1.5 rounded-lg bg-teal-500/20 text-teal-300 font-semibold transition">1x</button>
+                <button data-speed="2" id="spd2"
+                    class="px-2.5 py-1.5 rounded-lg text-slate-400 hover:text-white transition">2x</button>
+                <button data-speed="5" id="spd5"
+                    class="px-2.5 py-1.5 rounded-lg text-slate-400 hover:text-white transition">5x</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FULL-SCREEN 3D CRYO-EM BIOINFORMATIC DASHBOARD MODAL -->
+    <div id="specimenLabModal"
+        class="hidden fixed inset-0 z-40 overflow-y-auto p-3 sm:p-5 flex flex-col justify-between gap-3"
+        style="background: radial-gradient(circle at 50% 38%, rgba(6, 39, 54, 0.96) 0%, rgba(2, 11, 18, 0.98) 65%, rgba(1, 6, 11, 0.99) 100%); backdrop-filter: blur(22px);">
+
+        <div class="flex flex-wrap items-center justify-between gap-3 px-2">
+            <div class="flex items-center gap-3">
+                <div id="modalAvatarBadge"
+                    class="w-10 h-10 rounded-full bg-gradient-to-br from-teal-400/30 to-sky-500/30 border border-teal-400/50 flex items-center justify-center text-teal-200 font-mono font-bold text-sm shadow-[0_0_18px_rgba(45,212,191,0.3)]">
+                    VX
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h2 id="modalSpecimenName" class="text-sm sm:text-base font-bold text-white tracking-wide">
+                            Specimen Architect</h2>
+                        <span id="modalCognitiveStatus"
+                            class="text-[9px] font-mono px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-200 border border-amber-400/40">ANN</span>
+                    </div>
+                    <p id="modalLifeStageDetail" class="text-[11px] font-mono text-slate-400">MATURE ADULT &bull;
+                        Ecological Role</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-1.5 bg-slate-950/75 border border-teal-500/20 rounded-2xl px-2.5 py-1.5">
+                <button data-action="lab-prev"
+                    class="px-2.5 py-1 rounded-xl hover:bg-teal-500/15 text-slate-300 hover:text-teal-200 font-mono text-xs transition"
+                    title="Previous Organism">&larr; Prev</button>
+                <button data-action="lab-next"
+                    class="px-2.5 py-1 rounded-xl hover:bg-teal-500/15 text-slate-300 hover:text-teal-200 font-mono text-xs transition"
+                    title="Next Organism">Next &rarr;</button>
+                <div class="h-4 w-px bg-slate-800 mx-1"></div>
+                <button data-action="boost-specimen"
+                    class="px-2.5 py-1 rounded-xl bg-teal-500/20 hover:bg-teal-500/35 text-teal-200 border border-teal-400/40 font-mono text-xs transition">+
+                    ATP Boost</button>
+                <button data-action="lab-mutate"
+                    class="px-2.5 py-1 rounded-xl bg-amber-500/20 hover:bg-amber-500/35 text-amber-200 border border-amber-400/40 font-mono text-xs transition">Speciate</button>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <div
+                    class="hidden sm:flex items-center bg-slate-950/80 border border-slate-800 rounded-xl px-3 py-1.5 text-xs font-mono text-slate-400">
+                    <span class="mr-2 text-teal-400">&#9906;</span>
+                    <input id="cryoSearchInput" type="text" placeholder="Jump to species or ID..."
+                        class="bg-transparent text-slate-200 placeholder-slate-500 focus:outline-none w-36">
+                </div>
+                <button data-action="close-lab"
+                    class="px-3 py-1.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-200 border border-slate-700 font-mono text-xs transition">Close
+                    &times;</button>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center flex-1 min-h-[280px]">
+            <div class="lg:col-span-3 flex flex-col gap-3 px-2 sm:px-4">
+                <div>
+                    <span id="modalStrainBadge"
+                        class="text-[11px] font-mono uppercase tracking-[0.18em] text-slate-400 block mb-1">TARGET_STRAIN_VX</span>
+                    <div class="text-sm sm:text-base text-slate-200 font-medium mb-1">Cryo-EM Reconstruction</div>
+                    <div id="modalResolutionVal" class="text-4xl sm:text-5xl font-bold text-white tracking-tight"
+                        style="text-shadow: 0 0 28px rgba(56,189,248,0.35);">1.94 &Aring;</div>
+                    <div class="mt-2 inline-block text-[11px] font-mono font-bold tracking-[0.16em] text-cyan-300">
+                        ULTRA-HIGH RES</div>
+                </div>
+                <div class="border-t border-slate-800/80 pt-3 flex flex-col gap-1.5 text-[11px] font-mono">
+                    <div class="flex justify-between text-slate-400"><span>Civilization:</span><span
+                            id="modalCivilization" class="text-amber-300 font-semibold">Foraging</span></div>
+                    <div class="flex justify-between text-slate-400"><span>Hydration:</span><span id="modalHydration"
+                            class="text-sky-300 font-semibold">100%</span></div>
+                    <div class="flex justify-between text-slate-400"><span>Fitness:</span><span id="modalDefenseVal"
+                            class="text-emerald-300 font-semibold">0.0</span></div>
+                </div>
+                <p id="modalEcologyDetail"
+                    class="text-[11px] text-slate-300/90 leading-relaxed bg-slate-950/50 border border-slate-800/70 rounded-xl p-2.5">
+                    Ecological niche summary
+                </p>
+            </div>
+
+            <div class="lg:col-span-6 flex flex-col items-center justify-center relative">
+                <canvas id="cryo3dCanvas" width="760" height="400"
+                    class="w-full max-h-[360px] rounded-2xl block cursor-grab active:cursor-grabbing"></canvas>
+                <span class="text-[9px] font-mono text-slate-400/80 tracking-widest uppercase mt-1">Drag to rotate 3D
+                    Cryo-Lattice &bull; Live Cytoplasmic Neural Flux</span>
+            </div>
+
+            <div class="lg:col-span-3 hud-glass rounded-2xl p-3.5 border-cyan-400/25 flex flex-col gap-2">
+                <div class="flex items-center justify-between">
+                    <span
+                        class="text-[11px] font-mono font-semibold tracking-wider text-slate-200 uppercase">Interaction
+                        Map</span>
+                    <span id="modalActiveNodesBadge" class="text-[10px] font-mono text-cyan-300">124 Nodes</span>
+                </div>
+                <div class="grid grid-cols-2 gap-3 items-center">
+                    <div class="flex flex-col gap-2.5 font-mono">
+                        <div>
+                            <span class="text-[9px] text-slate-400 block">Binding Energy</span>
+                            <span id="modalBindingEnergy" class="text-lg font-bold text-white">-9.4 <span
+                                    class="text-[9px] text-slate-400 font-normal">kcal/mol</span></span>
+                        </div>
+                        <div>
+                            <span class="text-[9px] text-slate-400 block">Sensory Field</span>
+                            <span id="modalSensorArea" class="text-lg font-bold text-white">482 <span
+                                    class="text-[9px] text-slate-400 font-normal">&Aring;&sup2;</span></span>
+                        </div>
+                        <div>
+                            <span class="text-[9px] text-slate-400 block">Active Synapses</span>
+                            <span id="modalActiveNodesCount" class="text-base font-bold text-cyan-300">24</span>
+                        </div>
+                    </div>
+                    <canvas id="cryoInteractionCanvas" width="200" height="200"
+                        class="w-full h-36 block rounded-xl bg-slate-950/60"></canvas>
+                </div>
+                <div
+                    class="flex items-center justify-between text-[9px] font-mono text-slate-400 pt-1 border-t border-slate-800/80">
+                    <span class="flex items-center gap-1"><span
+                            class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>Symbiosis</span>
+                    <span class="flex items-center gap-1"><span
+                            class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>Synaptic</span>
+                    <span class="flex items-center gap-1"><span
+                            class="w-1.5 h-1.5 rounded-full bg-rose-400"></span>Threat</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <div class="hud-glass rounded-2xl p-3.5 border-cyan-400/20 flex flex-col gap-2">
+                <div class="flex items-center justify-between">
+                    <span class="text-[10px] font-mono font-bold tracking-wider text-slate-200 uppercase">AI Agent
+                        Network</span>
+                    <span class="text-[9px] font-mono text-emerald-400">LIVE</span>
+                </div>
+                <div class="flex flex-col gap-2 text-[10px] font-mono">
+                    <div>
+                        <div class="flex justify-between text-slate-300 mb-0.5"><span>ANN Topology Fold</span><span
+                                id="pipeFoldPct" class="text-teal-300">92%</span></div>
+                        <div class="w-full h-1 bg-slate-800 rounded-full overflow-hidden">
+                            <div id="pipeFoldBar" class="h-full bg-teal-400 w-[92%]"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-slate-300 mb-0.5"><span>Synaptic Docking</span><span
+                                id="pipeSynPct" class="text-sky-300">71%</span></div>
+                        <div class="w-full h-1 bg-slate-800 rounded-full overflow-hidden">
+                            <div id="pipeSynBar" class="h-full bg-sky-400 w-[71%]"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-slate-300 mb-0.5"><span>Hydration &amp; Niche</span><span
+                                id="pipeEcoPct" class="text-emerald-300">88%</span></div>
+                        <div class="w-full h-1 bg-slate-800 rounded-full overflow-hidden">
+                            <div id="pipeEcoBar" class="h-full bg-emerald-400 w-[88%]"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-slate-300 mb-0.5"><span>Metabolic Vitality</span><span
+                                id="pipeMetPct" class="text-amber-300">64%</span></div>
+                        <div class="w-full h-1 bg-slate-800 rounded-full overflow-hidden">
+                            <div id="pipeMetBar" class="h-full bg-amber-400 w-[64%]"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hud-glass rounded-2xl p-3.5 border-cyan-400/20 flex flex-col justify-between gap-2">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <span
+                            class="text-[10px] font-mono font-bold tracking-wider text-slate-200 uppercase block">Molecular
+                            Target</span>
+                        <span id="cryoProteinTitle" class="text-xs font-semibold text-cyan-300">FructoLyase-B</span>
+                    </div>
+                    <span id="cryoPatternTag" class="text-[9px] font-mono text-slate-400">Striped</span>
+                </div>
+                <div class="grid grid-cols-2 gap-2 items-center">
+                    <canvas id="cryoProteinCanvas" width="160" height="90"
+                        class="w-full h-20 block rounded-lg bg-slate-950/60"></canvas>
+                    <div class="text-[10px] font-mono flex flex-col gap-1">
+                        <div class="flex justify-between"><span class="text-slate-400">Mass:</span><span
+                                id="cryoMassVal" class="text-slate-200">16.5 kDa</span></div>
+                        <div class="flex justify-between"><span class="text-slate-400">Speed:</span><span
+                                id="cryoSpeedVal" class="text-sky-300">2.10</span></div>
+                        <div class="flex justify-between"><span class="text-slate-400">Vision:</span><span
+                                id="cryoVisionVal" class="text-violet-300">190 px</span></div>
+                        <div class="flex justify-between"><span class="text-slate-400">Escapes:</span><span
+                                id="cryoEscapesVal" class="text-emerald-300">0</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hud-glass rounded-2xl p-3.5 border-cyan-400/20 flex flex-col justify-between gap-2">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <span
+                            class="text-[10px] font-mono font-bold tracking-wider text-slate-200 uppercase block">Compound
+                            Analysis</span>
+                        <span id="cryoFormulaVal"
+                            class="text-xs font-mono font-semibold text-teal-300">C24H41N3O16</span>
+                    </div>
+                    <span id="cryoMolWeightVal" class="text-[9px] font-mono text-slate-400">627.59 g/mol</span>
+                </div>
+                <canvas id="cryoChemicalCanvas" width="260" height="95"
+                    class="w-full h-20 block rounded-lg bg-slate-950/60"></canvas>
+            </div>
+
+            <div class="hud-glass rounded-2xl p-3.5 border-cyan-400/20 flex flex-col justify-between gap-2">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <span
+                            class="text-[10px] font-mono font-bold tracking-wider text-slate-200 uppercase block">Binding
+                            Affinity</span>
+                        <div class="flex items-baseline gap-1.5">
+                            <span class="text-[9px] font-mono text-slate-400">Kd (nM)</span>
+                            <span id="cryoKdVal" class="text-2xl font-bold text-white">38</span>
+                            <span class="text-[9px] font-mono text-slate-400">&plusmn; 0.04</span>
+                        </div>
+                    </div>
+                    <span id="cryoVitalityBadge"
+                        class="px-2 py-0.5 rounded bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 text-[10px] font-mono font-bold">EXCELLENT</span>
+                </div>
+                <canvas id="modalVitalityCanvas" width="280" height="84"
+                    class="w-full h-20 block rounded-lg bg-slate-950/60"></canvas>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- RESEARCH MODE: REPEATABLE EXPERIMENTS AND REPORTING -->
+    <section id="researchModal" class="hidden fixed inset-0 z-[85] bg-slate-950/85 backdrop-blur-sm p-3 sm:p-6 overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="researchTitle">
+      <div class="max-w-4xl mx-auto my-3 sm:my-8 hud-glass rounded-2xl border border-cyan-400/30 shadow-2xl overflow-hidden">
+        <header class="sticky top-0 z-10 bg-slate-950/95 border-b border-slate-700 p-4 flex justify-between gap-3">
+          <div><div class="text-[10px] uppercase tracking-[.2em] text-cyan-300 font-mono">Scientific workspace</div><h2 id="researchTitle" class="text-xl font-bold text-white">Research Mode</h2><p class="text-xs text-slate-400 mt-1">Capture a baseline, change one condition, record observations and export a report.</p></div>
+          <button data-action="research" aria-label="Close research mode" class="rounded-lg px-3 py-1.5 bg-slate-800 text-white self-start">✕</button>
+        </header>
+        <div class="p-4 sm:p-5 space-y-4">
+          <div class="grid sm:grid-cols-2 gap-3">
+            <label class="text-xs text-slate-300">Research question
+              <textarea id="researchQuestion" rows="3" class="mt-1 w-full rounded-lg bg-slate-950 border border-slate-700 p-2 text-sm text-white" placeholder="Example: How does a heatwave affect the population distribution?"></textarea>
+            </label>
+            <label class="text-xs text-slate-300">Experiment condition / treatment
+              <select id="researchCondition" class="mt-1 w-full rounded-lg bg-slate-950 border border-slate-700 p-2 text-sm text-white">
+                <option value="Baseline / control">Baseline / control</option><option>Heatwave / drought</option><option>Cold / ice age</option><option>High food availability</option><option>Predator pressure</option><option>Habitat disturbance</option><option>Custom condition</option>
+              </select>
+              <p class="text-[10px] text-slate-500 mt-2">Apply the chosen condition using the existing simulation controls. Research Mode records the state; it does not silently change world settings.</p>
+            </label>
+          </div>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-2" id="researchMetrics">
+            <div class="rounded-lg bg-slate-900 p-3"><div class="text-[10px] text-slate-400">Organisms</div><strong id="researchPopulation" class="text-xl text-white">—</strong></div>
+            <div class="rounded-lg bg-slate-900 p-3"><div class="text-[10px] text-slate-400">Land / Ocean / Sky</div><strong id="researchHabitats" class="text-sm text-white">—</strong></div>
+            <div class="rounded-lg bg-slate-900 p-3"><div class="text-[10px] text-slate-400">Avg. energy</div><strong id="researchEnergy" class="text-xl text-white">—</strong></div>
+            <div class="rounded-lg bg-slate-900 p-3"><div class="text-[10px] text-slate-400">Avg. hydration</div><strong id="researchHydration" class="text-xl text-white">—</strong></div>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <button data-action="research-baseline" class="rounded-lg px-3 py-2 bg-cyan-500/20 border border-cyan-400/40 text-cyan-100 text-xs font-semibold">Capture baseline</button>
+            <button data-action="research-record" class="rounded-lg px-3 py-2 bg-emerald-500/20 border border-emerald-400/40 text-emerald-100 text-xs font-semibold">Record observation</button>
+            <button data-action="research-export" class="rounded-lg px-3 py-2 bg-violet-500/20 border border-violet-400/40 text-violet-100 text-xs font-semibold">Export research report</button>
+            <button data-action="research-reset" class="rounded-lg px-3 py-2 bg-slate-800 border border-slate-600 text-slate-200 text-xs">Clear experiment</button>
+          </div>
+          <div class="rounded-xl border border-slate-700 bg-slate-950/70 p-3">
+            <div class="flex justify-between items-center gap-2"><h3 class="text-sm font-bold text-white">Observation log</h3><span id="researchCount" class="text-[10px] font-mono text-cyan-300">0 records</span></div>
+            <div id="researchLog" class="mt-2 space-y-2 text-xs text-slate-300"><p class="text-slate-500">Capture a baseline to begin your experiment.</p></div>
+          </div>
+          <div class="rounded-lg border border-amber-400/30 bg-amber-500/5 p-3 text-[11px] text-amber-100/90">Research integrity: use the same starting conditions for repeat trials, change one variable at a time, record simulation tick and settings, and repeat trials. These results describe this artificial-life model; they are not validated predictions about real ecosystems.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PRACTICAL REAL-WORLD APPLICATIONS PANEL -->
+    <section id="applicationsModal" class="hidden fixed inset-0 z-[80] bg-slate-950/80 backdrop-blur-sm p-3 sm:p-6 overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="applicationsTitle">
+        <div class="max-w-5xl mx-auto my-3 sm:my-8 hud-glass rounded-2xl border border-emerald-400/30 shadow-2xl overflow-hidden">
+            <header class="sticky top-0 z-10 bg-slate-950/95 border-b border-slate-700/80 p-4 sm:p-5 flex items-start justify-between gap-4">
+                <div>
+                    <div class="text-[10px] uppercase tracking-[0.22em] text-emerald-300 font-mono">Beyond the simulation</div>
+                    <h2 id="applicationsTitle" class="text-lg sm:text-2xl font-bold text-white mt-1">Practical Applications of Digital Life</h2>
+                    <p class="text-xs sm:text-sm text-slate-400 mt-1">Explore how artificial-life experiments can inform real-world questions.</p>
+                </div>
+                <button data-action="applications" aria-label="Close applications" class="shrink-0 rounded-lg px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-white">✕</button>
+            </header>
+            <div class="p-4 sm:p-5 space-y-5">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    <article class="rounded-xl border border-emerald-400/25 bg-emerald-500/5 p-4">
+                        <div class="text-2xl mb-2">🌿</div><h3 class="font-bold text-emerald-200 text-sm">Wildlife conservation</h3>
+                        <p class="text-xs text-slate-300 mt-2 leading-relaxed">Explore how habitat, food availability and predator-prey relationships can affect population stability. Useful as a teaching sandbox for conservation concepts.</p>
+                        <p class="text-[10px] text-slate-400 mt-3"><b>Try it:</b> Observe a species, introduce a predator, then compare population and lineage telemetry.</p>
+                    </article>
+                    <article class="rounded-xl border border-lime-400/25 bg-lime-500/5 p-4">
+                        <div class="text-2xl mb-2">🌾</div><h3 class="font-bold text-lime-200 text-sm">Agriculture & pollination</h3>
+                        <p class="text-xs text-slate-300 mt-2 leading-relaxed">Demonstrate why pollinators, plant resources and habitat diversity matter to resilient agricultural ecosystems.</p>
+                        <p class="text-[10px] text-slate-400 mt-3"><b>Try it:</b> Spawn honeybees or hummingbirds and observe their movement around resource-rich areas.</p>
+                    </article>
+                    <article class="rounded-xl border border-sky-400/25 bg-sky-500/5 p-4">
+                        <div class="text-2xl mb-2">💧</div><h3 class="font-bold text-sky-200 text-sm">Water & habitat planning</h3>
+                        <p class="text-xs text-slate-300 mt-2 leading-relaxed">Use the world as a visual aid to discuss how water access, terrain and separated habitats influence where organisms can survive.</p>
+                        <p class="text-[10px] text-slate-400 mt-3"><b>Try it:</b> Compare organism activity across islands and inspect sensor and survival indicators.</p>
+                    </article>
+                    <article class="rounded-xl border border-amber-400/25 bg-amber-500/5 p-4">
+                        <div class="text-2xl mb-2">🧬</div><h3 class="font-bold text-amber-200 text-sm">Evolution & biodiversity education</h3>
+                        <p class="text-xs text-slate-300 mt-2 leading-relaxed">Teach adaptation, inheritance, selection, niches and biodiversity through observable artificial populations.</p>
+                        <p class="text-[10px] text-slate-400 mt-3"><b>Try it:</b> Follow a lineage, compare generations and inspect changes in organism traits.</p>
+                    </article>
+                    <article class="rounded-xl border border-violet-400/25 bg-violet-500/5 p-4">
+                        <div class="text-2xl mb-2">🤖</div><h3 class="font-bold text-violet-200 text-sm">AI & autonomous robotics research</h3>
+                        <p class="text-xs text-slate-300 mt-2 leading-relaxed">Illustrate sensor-driven decisions, goal selection, reward and punishment, and how simple agents adapt to changing environments.</p>
+                        <p class="text-[10px] text-slate-400 mt-3"><b>Try it:</b> Inspect an organism's ANN, assign goals where supported, and compare its behaviour.</p>
+                    </article>
+                    <article class="rounded-xl border border-rose-400/25 bg-rose-500/5 p-4">
+                        <div class="text-2xl mb-2">🌍</div><h3 class="font-bold text-rose-200 text-sm">Ecosystem resilience & restoration</h3>
+                        <p class="text-xs text-slate-300 mt-2 leading-relaxed">Discuss disturbances, recovery, resource pressure and the role of species diversity in ecosystem resilience.</p>
+                        <p class="text-[10px] text-slate-400 mt-3"><b>Try it:</b> Record a checkpoint, change conditions or populations, and compare the resulting telemetry.</p>
+                    </article>
+                </div>
+                <div class="rounded-xl border border-cyan-400/25 bg-cyan-500/5 p-4">
+                    <h3 class="text-sm font-bold text-cyan-200">A practical classroom or project workflow</h3>
+                    <ol class="list-decimal list-inside text-xs text-slate-300 mt-2 space-y-1.5 leading-relaxed">
+                        <li>Choose a question, such as how predator numbers affect prey populations.</li>
+                        <li>Record a baseline using the telemetry and checkpoint tools.</li>
+                        <li>Change one factor at a time using the simulation controls.</li>
+                        <li>Observe population, behaviour and lineage changes over several runs.</li>
+                        <li>Export the available telemetry and explain the limits of the experiment.</li>
+                    </ol>
+                </div>
+                <div class="rounded-xl border border-amber-400/30 bg-amber-500/10 p-4">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-amber-200">Scientific limitation</h3>
+                    <p class="text-xs text-slate-300 mt-1 leading-relaxed">Digital Life is an educational artificial-life simulation, not a validated ecological forecasting, agricultural decision-support, medical or conservation-planning system. Its rules and parameters are simplified. Real-world decisions require field data, domain-specific models, expert review and validation.</p>
+                </div>
+            </div>
+            <footer class="border-t border-slate-700/80 p-3 flex justify-end">
+                <button data-action="applications" class="px-4 py-2 rounded-lg bg-emerald-500/20 border border-emerald-400/40 text-emerald-200 text-xs font-semibold hover:bg-emerald-500/30">Back to simulation</button>
+            </footer>
+        </div>
+    </section>
+
+
+    <section id="scaleGuideModal" class="hidden fixed inset-0 z-[115] bg-slate-950/85 backdrop-blur-sm p-3 sm:p-6 overflow-y-auto">
+      <div class="max-w-3xl mx-auto mt-4 hud-glass rounded-2xl border border-sky-400/30 shadow-2xl">
+        <header class="p-4 border-b border-slate-700 flex items-center justify-between"><div><div class="text-[10px] uppercase tracking-widest text-sky-300">1:1 physical reference</div><h2 class="text-xl font-bold">World Scale Explorer</h2><p class="text-xs text-slate-400">Human baseline = 1.7 metres; dimensions are approximate reference values.</p></div><button data-action="scale-guide" class="text-2xl text-slate-300">×</button></header>
+        <div class="p-4 grid sm:grid-cols-2 gap-3 text-xs">
+          <div class="rounded-xl bg-slate-900/70 p-3"><div class="text-slate-400">World conversion</div><div class="text-2xl font-bold text-cyan-200">0.0644 m</div><div class="text-slate-400">per rendered world unit (based on current human model proportions)</div></div>
+          <div class="rounded-xl bg-slate-900/70 p-3"><div class="text-slate-400">Human reference model</div><div class="text-2xl font-bold text-amber-200">1.70 m</div><div class="text-slate-400">approximately 26.4 world units tall</div></div>
+        </div>
+        <div class="p-4 overflow-x-auto"><table class="w-full text-left text-xs"><thead class="text-slate-400"><tr><th class="p-2">Reference</th><th class="p-2">Approx. dimension</th><th class="p-2">Human ratio</th></tr></thead><tbody class="divide-y divide-slate-700/70 text-slate-200">
+          <tr><td class="p-2">Human</td><td class="p-2">1.7 m</td><td class="p-2">1×</td></tr><tr><td class="p-2">Doorway</td><td class="p-2">2.1 m</td><td class="p-2">1.24×</td></tr><tr><td class="p-2">Car length</td><td class="p-2">4.5 m</td><td class="p-2">2.65×</td></tr><tr><td class="p-2">Single-storey house</td><td class="p-2">5 m</td><td class="p-2">2.94×</td></tr><tr><td class="p-2">Two-storey house</td><td class="p-2">8 m</td><td class="p-2">4.71×</td></tr><tr><td class="p-2">Tree</td><td class="p-2">18 m</td><td class="p-2">10.59×</td></tr><tr><td class="p-2">Blue whale length</td><td class="p-2">25 m</td><td class="p-2">14.71×</td></tr><tr><td class="p-2">Boeing 737 length</td><td class="p-2">40 m</td><td class="p-2">23.53×</td></tr><tr><td class="p-2">Eiffel Tower height</td><td class="p-2">330 m</td><td class="p-2">194×</td></tr><tr><td class="p-2">Burj Khalifa height</td><td class="p-2">828 m</td><td class="p-2">487×</td></tr></tbody></table></div>
+        <p class="px-4 pb-4 text-[10px] text-slate-500">The scale explorer provides a consistent reference framework. Existing island coordinates, terrain and legacy structures are not automatically rescaled by this reference conversion.</p>
+      </div>
+    </section>
+    <section id="houseInteriorModal" class="hidden fixed inset-0 z-[114] bg-slate-950/80 backdrop-blur-sm p-3 sm:p-6 overflow-y-auto">
+      <div class="max-w-2xl mx-auto mt-8 hud-glass rounded-2xl border border-amber-400/30 shadow-2xl p-4">
+        <header class="flex items-center justify-between mb-3"><div><div class="text-[10px] uppercase tracking-widest text-amber-300">Architecture / cutaway mode</div><h2 class="text-xl font-bold">House Interior</h2></div><button data-action="interior-mode" class="text-2xl text-slate-300">×</button></header>
+        <p class="text-xs text-slate-400 mb-3">House roofs and exterior walls are hidden in the 3D world to reveal furnished interiors.</p>
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
+          <div class="rounded-lg border border-slate-600 bg-slate-900 p-3"><div class="text-amber-200 font-bold">Sleeping area</div><p class="text-slate-400 mt-1">Bed, mattress and personal space.</p></div>
+          <div class="rounded-lg border border-slate-600 bg-slate-900 p-3"><div class="text-amber-200 font-bold">Living / work</div><p class="text-slate-400 mt-1">Table and stool for daily activity.</p></div>
+          <div class="rounded-lg border border-slate-600 bg-slate-900 p-3"><div class="text-amber-200 font-bold">Cooking hearth</div><p class="text-slate-400 mt-1">Heat and food preparation point.</p></div>
+          <div class="rounded-lg border border-slate-600 bg-slate-900 p-3"><div class="text-amber-200 font-bold">Storage</div><p class="text-slate-400 mt-1">Food and useful supplies.</p></div>
+          <div class="rounded-lg border border-slate-600 bg-slate-900 p-3"><div class="text-amber-200 font-bold">Partition</div><p class="text-slate-400 mt-1">Separates sleeping and shared space.</p></div>
+          <div class="rounded-lg border border-slate-600 bg-slate-900 p-3"><div class="text-amber-200 font-bold">Windows / entry</div><p class="text-slate-400 mt-1">Light, ventilation and access.</p></div>
+        </div>
+        <div class="mt-4 flex justify-end"><button data-action="interior-mode" class="px-4 py-2 rounded-lg bg-amber-500/20 border border-amber-400/40 text-amber-100 text-xs">Close interior mode</button></div>
+      </div>
+    </section>
+
+    <script src="three.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/neataptic/1.4.7/neataptic.min.js"></script>
+    <script src="script.js"></script>
+
+</body>
+
+</html>

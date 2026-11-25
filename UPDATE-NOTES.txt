@@ -14,3 +14,13 @@ Deployment
 
 Research interpretation
 This records measurements from the artificial-life simulation. It does not automatically manipulate world parameters and is not a validated ecological forecasting tool. Change conditions with existing simulation controls, record observations, and repeat trials with comparable starting conditions.
+
+
+PHYSICAL SCALE + WORLD SIMULATION UPDATE
+- Added a 1.7 m human reference baseline and a World Scale Explorer panel.
+- Calibrated the human model to approximately 1.7 m and added characteristic reference dimensions for the represented species.
+- Reproportioned voxel trees toward an approximately 18 m reference height and default timber houses toward a practical single-storey footprint.
+- Added furnished house cutaway interiors (sleeping area, table/work area, hearth, storage and partition). Use the House Interior button to toggle cutaway mode.
+- Added human faction rivalry: stressed humans can defect, rival groups can clash, combat strength varies with human development era, combat damage causes retreat/defeat, and survivors recover over time.
+- Existing predator-prey interactions, ANN behaviour, research tools, FPV and application panels are retained.
+- Physical dimensions are approximate game-world references, not a survey-grade 1:1 geospatial model. Existing island coordinates and legacy structure types are not globally rescaled.
