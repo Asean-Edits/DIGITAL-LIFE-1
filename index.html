@@ -17,8 +17,26 @@
 
 <body class="text-slate-100 overflow-hidden select-none">
 
-    <!-- Dual Layered Canvases -->
+    <!-- Dual Layered Canvases + Haikei Organic Ambient Layer -->
     <canvas id="world3dCanvas" class="fixed inset-0 w-full h-full"></canvas>
+    <svg id="haikeiBackdrop" aria-hidden="true" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice">
+        <defs>
+            <radialGradient id="haikeiBlobA" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="var(--rt-accent)" stop-opacity="0.22" />
+                <stop offset="100%" stop-color="var(--rt-accent)" stop-opacity="0" />
+            </radialGradient>
+            <radialGradient id="haikeiBlobB" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="var(--rt-secondary)" stop-opacity="0.18" />
+                <stop offset="100%" stop-color="var(--rt-secondary)" stop-opacity="0" />
+            </radialGradient>
+        </defs>
+        <path class="haikei-wave-back"
+            d="M0,690 C280,620 520,770 840,700 C1120,640 1290,730 1440,680 L1440,900 L0,900 Z" />
+        <path class="haikei-wave-front"
+            d="M0,750 C340,700 610,820 960,745 C1190,695 1330,770 1440,735 L1440,900 L0,900 Z" />
+        <circle class="haikei-orb-a" cx="240" cy="210" r="320" fill="url(#haikeiBlobA)" />
+        <circle class="haikei-orb-b" cx="1180" cy="260" r="360" fill="url(#haikeiBlobB)" />
+    </svg>
     <canvas id="simCanvas" class="fixed inset-0 w-full h-full"></canvas>
 
     <!-- Floating FPV Restore UI Button -->
@@ -31,8 +49,7 @@
     <div id="hoverTooltip" class="hidden fixed z-40 pointer-events-none hud-glass px-3 py-2 max-w-[240px] text-xs">
         <div class="flex items-center justify-between gap-2">
             <span id="hoverTitle" class="font-semibold text-white truncate">Entity</span>
-            <span id="hoverBadge"
-                class="font-mono text-[9px] px-1.5 py-0.5 rounded-md bg-teal-400/15 text-teal-300 border border-teal-400/25 shrink-0">TYPE</span>
+            <span id="hoverBadge" class="font-mono text-[9px] px-1.5 py-0.5 rounded-md rt-pill shrink-0">TYPE</span>
         </div>
         <div id="hoverSub" class="text-[11px] text-slate-300 mt-0.5">Role &amp; State</div>
         <div id="hoverMeta" class="font-mono text-[10px] text-slate-400 mt-0.5">Telemetry</div>
@@ -40,7 +57,7 @@
 
     <!-- Toast Banner -->
     <div id="simToast" style="opacity:0"
-        class="fixed top-4 left-1/2 -translate-x-1/2 z-40 pointer-events-none hud-glass px-3.5 py-1.5 text-[11px] font-mono text-teal-200 transition-opacity duration-300">
+        class="fixed top-4 left-1/2 -translate-x-1/2 z-40 pointer-events-none hud-glass px-3.5 py-1.5 text-[11px] font-mono rt-toast transition-opacity duration-300">
         Digital Life Initialized
     </div>
 
@@ -50,7 +67,7 @@
         <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
         <span id="fpvBannerText" class="text-amber-200 font-semibold">FPV Active</span>
         <span id="fpvSphereBadge"
-            class="px-1.5 py-0.5 rounded bg-white/5 text-teal-300 text-[9px] border border-white/10">LITHOSPHERE</span>
+            class="px-1.5 py-0.5 rounded bg-white/5 rt-accent-text text-[9px] border border-white/10">LITHOSPHERE</span>
         <button data-action="fpv-prev"
             class="px-2 py-0.5 rounded-md bg-white/5 hover:bg-white/10 text-slate-200">&larr;</button>
         <button data-action="fpv-next"
@@ -79,21 +96,21 @@
         class="fixed top-3.5 left-3.5 z-20 flex flex-col gap-2 w-[368px] max-w-[calc(100vw-1.75rem)] pointer-events-none">
 
         <!-- Clean Brand & Core Telemetry Pill -->
-        <div class="hud-glass px-3.5 py-2.5 pointer-events-auto">
+        <div class="hud-glass motion-panel px-3.5 py-2.5 pointer-events-auto">
             <div class="flex items-center justify-between gap-2">
                 <div class="flex items-center gap-2 min-w-0">
-                    <span class="w-2 h-2 rounded-full bg-teal-400 shadow-[0_0_8px_#2dd4bf] shrink-0"></span>
+                    <span class="w-2 h-2 rounded-full rt-beacon shrink-0"></span>
                     <h1 class="text-xs font-bold tracking-wider uppercase text-white truncate">Digital Life</h1>
                     <span id="hudViewMode"
-                        class="font-mono text-[9px] px-1.5 py-0.5 rounded-md bg-white/5 text-teal-300 border border-white/10">3D
+                        class="font-mono text-[9px] px-1.5 py-0.5 rounded-md bg-white/5 rt-accent-text border border-white/10">3D
                         ISO</span>
                 </div>
                 <div class="flex items-center gap-2.5 font-mono text-[10px] text-slate-300 shrink-0">
                     <span>Pop <b id="hudPop" class="text-white">0</b></span>
                     <span class="text-slate-600">&bull;</span>
-                    <span id="hudWeatherClock" class="text-slate-200">11:30 &bull; Clear</span>
+                    <span id="hudWeatherClock" class="rt-clock-badge">11:30 &bull; Clear</span>
                     <span class="text-slate-600">&bull;</span>
-                    <span id="hudZoom" class="text-teal-300">85%</span>
+                    <span id="hudZoom" class="rt-accent-text">85%</span>
                 </div>
             </div>
 
@@ -102,7 +119,7 @@
                 <summary
                     class="list-none cursor-pointer flex items-center justify-between text-[10px] font-mono text-slate-400 hover:text-slate-200 pt-1 border-t border-white/5">
                     <span>Biosphere &amp; Civilization Metrics</span>
-                    <span class="text-[9px] text-teal-300/80 group-open:hidden">Expand +</span>
+                    <span class="text-[9px] rt-accent-text group-open:hidden">Expand +</span>
                     <span class="text-[9px] text-slate-400 hidden group-open:inline">Collapse &minus;</span>
                 </summary>
                 <div
@@ -120,7 +137,7 @@
         </div>
 
         <!-- Geological Era & Culture Card -->
-        <div id="eraStepperCard" class="hud-glass p-3 pointer-events-auto">
+        <div id="eraStepperCard" class="hud-glass motion-panel p-3 pointer-events-auto">
             <div class="flex items-start justify-between gap-2">
                 <div class="min-w-0">
                     <div class="flex items-center gap-1.5">
@@ -140,8 +157,7 @@
             </div>
 
             <div class="w-full h-1 bg-white/5 rounded-full overflow-hidden mt-2.5">
-                <div id="eraProgressBar" class="h-full bg-gradient-to-r from-teal-400 to-sky-400" style="width:0%">
-                </div>
+                <div id="eraProgressBar" class="h-full rt-progress-bar" style="width:0%"></div>
             </div>
 
             <div class="grid grid-cols-7 gap-1 mt-2 font-mono text-[9px]">
@@ -164,13 +180,12 @@
 
             <div class="mt-2 pt-2 border-t border-white/5">
                 <div class="flex items-center justify-between text-[10px] font-mono">
-                    <span id="cultureStageTitle" class="text-teal-300 font-medium truncate">Stage 0: Foraging
+                    <span id="cultureStageTitle" class="rt-accent-text font-medium truncate">Stage 0: Foraging
                         Instincts</span>
                     <span id="cultureXpText" class="text-slate-400 shrink-0">0 XP</span>
                 </div>
                 <div class="w-full h-1 bg-white/5 rounded-full overflow-hidden mt-1.5">
-                    <div id="cultureXpBar" class="h-full bg-gradient-to-r from-teal-400 to-amber-300" style="width:0%">
-                    </div>
+                    <div id="cultureXpBar" class="h-full rt-xp-bar" style="width:0%"></div>
                 </div>
                 <div id="shelterBreakdownText" class="font-mono text-[9px] text-slate-400 mt-1 truncate">Shelters: Camp
                     0 &bull; Tower 0 &bull; Granary 0 &bull; Beacon 0</div>
@@ -178,10 +193,10 @@
         </div>
 
         <!-- Collapsible Living Chronicle Feed -->
-        <details id="chronicleCard" class="hud-glass px-3.5 py-2.5 pointer-events-auto group">
+        <details id="chronicleCard" class="hud-glass motion-panel px-3.5 py-2.5 pointer-events-auto group">
             <summary class="list-none cursor-pointer flex items-center justify-between">
                 <div class="flex items-center gap-2">
-                    <span class="w-1.5 h-1.5 rounded-full bg-teal-400"></span>
+                    <span class="w-1.5 h-1.5 rounded-full rt-beacon"></span>
                     <span class="text-[10px] font-semibold uppercase tracking-wider text-slate-200">Biosphere
                         Chronicle</span>
                 </div>
@@ -189,7 +204,7 @@
             </summary>
             <ul id="chronicleList"
                 class="hud-scroll max-h-24 overflow-y-auto space-y-1 mt-2 pt-2 border-t border-white/5 font-mono text-[10px] text-slate-300">
-                <li class="text-teal-300">[0] Archipelago seeded with 25 species &amp; Human ANN pioneers.</li>
+                <li class="rt-accent-text">[0] Archipelago seeded with 25 species &amp; Human ANN pioneers.</li>
             </ul>
         </details>
     </aside>
@@ -199,7 +214,7 @@
         class="fixed top-3.5 right-3.5 z-20 flex flex-col items-end gap-2 max-h-[calc(100vh-5.5rem)] pointer-events-none">
 
         <!-- Clean 5-Item Action Pill Bar -->
-        <div class="hud-glass p-1 flex items-center gap-1 pointer-events-auto">
+        <div class="hud-glass motion-panel p-1 flex items-center gap-1 pointer-events-auto">
             <button data-action="research"
                 class="px-2.5 py-1.5 rounded-xl text-[11px] font-mono text-cyan-200 hover:bg-white/10">Research</button>
             <button data-action="species-panel"
@@ -224,7 +239,7 @@
                         class="text-left px-2.5 py-1.5 rounded-lg hover:bg-white/10 text-yellow-200">Evolutionary
                         Goals</button>
                     <button data-action="scale-guide"
-                        class="text-left px-2.5 py-1.5 rounded-lg hover:bg-white/10 text-teal-200">World Scale (1.7 m
+                        class="text-left px-2.5 py-1.5 rounded-lg hover:bg-white/10 rt-accent-text">World Scale (1.7 m
                         Ref)</button>
                     <button data-action="interior-mode"
                         class="text-left px-2.5 py-1.5 rounded-lg hover:bg-white/10 text-amber-200">House Interior
@@ -299,7 +314,7 @@
                                     <span id="dnaAgeText" class="insp-muted">Age 0s &bull; 100%</span>
                                 </div>
                                 <div class="insp-bar">
-                                    <div id="dnaGrowthBar" class="h-full bg-teal-400" style="width:100%"></div>
+                                    <div id="dnaGrowthBar" class="h-full rt-bar-fill" style="width:100%"></div>
                                 </div>
                             </div>
                             <div class="insp-vital">
@@ -347,7 +362,7 @@
                             <div class="insp-fact"><span class="insp-fact-k">Stress / Res</span><span id="dnaStressRes"
                                     class="insp-fact-v text-amber-200">8% / 50%</span></div>
                             <div class="insp-fact"><span class="insp-fact-k">Defense</span><span id="survivalDefense"
-                                    class="insp-fact-v text-teal-200">GROUP</span></div>
+                                    class="insp-fact-v rt-accent-text">GROUP</span></div>
                             <div class="insp-fact"><span class="insp-fact-k">Escapes</span><span id="survivalEscapes"
                                     class="insp-fact-v text-emerald-300">0</span></div>
                             <div class="insp-fact"><span class="insp-fact-k">Role / Faction</span><span
@@ -364,7 +379,7 @@
                             <div class="insp-sec-body">
                                 <canvas id="neuralCanvas" width="300" height="130" class="insp-canvas"></canvas>
                                 <div class="flex items-center justify-between text-[10px] font-mono">
-                                    <span id="neuralStateLabel" class="text-teal-300">FORAGING</span>
+                                    <span id="neuralStateLabel" class="rt-accent-text">FORAGING</span>
                                     <span id="dnaMindGrowthText" class="text-amber-300">Mind IQ: 1.00</span>
                                 </div>
                                 <p id="dnaThoughtReadout" class="insp-thought">Thinking: Exploring island habitat</p>
@@ -393,7 +408,7 @@
                             </div>
                             <div class="flex items-center justify-between font-mono text-[9px] text-slate-300">
                                 <span id="humanAnnSynapses">Synapses: 4 &bull; Learned: 0</span>
-                                <span id="humanCmdStats" class="text-teal-300">Cmds: 0 &bull; Revs: 0</span>
+                                <span id="humanCmdStats" class="rt-accent-text">Cmds: 0 &bull; Revs: 0</span>
                             </div>
                             <div class="flex gap-1.5">
                                 <select id="humanTaskSelect" class="insp-select flex-1">
@@ -448,7 +463,7 @@
                     <button data-action="species-panel"
                         class="text-slate-400 hover:text-white text-base leading-none">&times;</button>
                 </div>
-                <div id="survivalSummaryText" class="font-mono text-[10px] text-teal-200 mb-2">Peak Gen: 1</div>
+                <div id="survivalSummaryText" class="font-mono text-[10px] rt-accent-text mb-2">Peak Gen: 1</div>
                 <div id="speciesRosterList" class="max-h-56 overflow-y-auto space-y-1 font-mono text-[10px]"></div>
             </section>
 
@@ -457,14 +472,14 @@
                 <div class="flex items-center justify-between mb-2">
                     <h3 class="font-semibold text-sky-300 uppercase tracking-wider text-[10px]">Population Telemetry
                     </h3>
-                    <span id="chartPopulation" class="font-mono text-[10px] text-teal-300">0 Living</span>
+                    <span id="chartPopulation" class="font-mono text-[10px] rt-accent-text">0 Living</span>
                     <button data-action="charts"
                         class="text-slate-400 hover:text-white text-base leading-none">&times;</button>
                 </div>
                 <div class="flex items-center justify-between gap-1 mb-2 font-mono text-[9px]">
                     <div class="flex gap-1">
                         <button id="chartFilterAll" data-chart-filter="all"
-                            class="px-2 py-0.5 rounded-md bg-teal-400/20 text-teal-200">All</button>
+                            class="px-2 py-0.5 rounded-md rt-pill">All</button>
                         <button id="chartFilterLand" data-chart-filter="land"
                             class="px-2 py-0.5 rounded-md bg-white/5 text-slate-300">Land</button>
                         <button id="chartFilterOcean" data-chart-filter="ocean"
@@ -478,7 +493,7 @@
                     class="w-full rounded-xl border border-white/10 bg-[#020a14]"></canvas>
                 <div class="flex gap-2 mt-2 font-mono text-[10px]">
                     <button data-action="export-csv"
-                        class="flex-1 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-teal-200">Export CSV</button>
+                        class="flex-1 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 rt-accent-text">Export CSV</button>
                     <button data-action="export-json"
                         class="flex-1 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-sky-200">Export JSON</button>
                 </div>
@@ -522,7 +537,7 @@
                     </div>
                     <div>
                         <div class="flex justify-between"><span>Thermal Shift</span><span id="valTempShift"
-                                class="text-teal-200">+0&deg;C</span></div>
+                                class="rt-accent-text">+0&deg;C</span></div>
                         <input id="sliderTempShift" data-input-action="sliders" type="range" min="-15" max="15" step="1"
                             value="0" class="w-full" />
                     </div>
@@ -566,7 +581,7 @@
                     </div>
                     <div class="grid grid-cols-3 gap-1">
                         <button data-action="save-checkpoint"
-                            class="py-1 rounded-lg bg-teal-400/15 text-teal-200">Save</button>
+                            class="py-1 rounded-lg bg-white/5 rt-accent-text">Save</button>
                         <button data-action="restore-checkpoint"
                             class="py-1 rounded-lg bg-sky-400/15 text-sky-200">Restore</button>
                         <button data-action="undo-checkpoint"
@@ -576,9 +591,9 @@
                         <input id="seedStateInput" type="text" placeholder="dl1|... seed code"
                             class="flex-1 min-w-0 px-2 py-1 rounded-lg bg-slate-950/90 border border-white/10 text-slate-200" />
                         <button data-action="copy-seed-code"
-                            class="px-2 py-1 rounded-lg bg-white/5 text-teal-200">Copy</button>
+                            class="px-2 py-1 rounded-lg bg-white/5 rt-accent-text">Copy</button>
                         <button data-action="apply-seed-code"
-                            class="px-2 py-1 rounded-lg bg-teal-400/15 text-teal-200">Load</button>
+                            class="px-2 py-1 rounded-lg bg-white/10 rt-accent-text">Load</button>
                     </div>
                     <div class="grid grid-cols-2 gap-1 pt-1">
                         <button data-action="reset-humans" class="py-1 rounded-lg bg-rose-400/15 text-rose-200">Reset
@@ -600,13 +615,13 @@
                 <p id="lineageChainBox" class="font-mono text-[10px] text-slate-300">Select an organism to trace lineage
                     &amp; compare ANN activations.</p>
                 <div class="grid grid-cols-2 gap-1.5 font-mono text-[10px]">
-                    <div id="compareLeftBox" class="p-2 rounded-lg bg-slate-950/80 border border-teal-400/25"></div>
+                    <div id="compareLeftBox" class="p-2 rounded-lg bg-slate-950/80 border border-white/10"></div>
                     <div id="compareRightBox" class="p-2 rounded-lg bg-slate-950/80 border border-amber-400/25"></div>
                 </div>
                 <div class="grid grid-cols-3 gap-1 font-mono text-[10px]">
                     <button data-action="pick-compare-peer" class="py-1.5 rounded-lg bg-white/5 text-amber-200">Swap
                         Peer</button>
-                    <button data-action="evolve-gen" class="py-1.5 rounded-lg bg-teal-400/15 text-teal-200">Select
+                    <button data-action="evolve-gen" class="py-1.5 rounded-lg bg-white/10 rt-accent-text">Select
                         Gen</button>
                     <button data-action="record-milestone"
                         class="py-1.5 rounded-lg bg-purple-400/15 text-purple-200">+Milestone</button>
@@ -631,16 +646,15 @@
 
     <!-- BOTTOM FLOATING ACTION DOCK -->
     <nav class="fixed bottom-3.5 left-1/2 -translate-x-1/2 z-20 max-w-[calc(100vw-1.5rem)]">
-        <div class="hud-glass p-1.5 flex items-center gap-1.5 overflow-x-auto">
-            <button data-action="pause"
-                class="px-3 py-1.5 rounded-xl bg-teal-400/20 text-teal-200 border border-teal-400/30 font-mono text-xs font-semibold shrink-0">
+        <div class="hud-glass motion-panel p-1.5 flex items-center gap-1.5 overflow-x-auto">
+            <button data-action="pause" class="px-3 py-1.5 rounded-xl rt-pill font-mono text-xs font-semibold shrink-0">
                 <span id="textPlayPause">Pause</span>
             </button>
 
             <div
                 class="flex items-center bg-black/35 rounded-xl p-0.5 border border-white/10 font-mono text-[11px] shrink-0">
                 <button id="spd1" data-speed="1"
-                    class="px-2 py-1 rounded-lg bg-teal-400/20 text-teal-300 font-semibold transition">1x</button>
+                    class="px-2 py-1 rounded-lg rt-pill font-semibold transition">1x</button>
                 <button id="spd2" data-speed="2"
                     class="px-2 py-1 rounded-lg text-slate-400 hover:text-white transition">2x</button>
                 <button id="spd5" data-speed="5"
@@ -650,7 +664,7 @@
             <div class="h-4 w-px bg-white/10 shrink-0"></div>
 
             <button id="toolInspect" data-mode="inspect"
-                class="px-2.5 py-1.5 rounded-xl text-xs font-medium transition shrink-0 bg-teal-400/20 text-teal-200 border border-teal-400/30">Inspect</button>
+                class="px-2.5 py-1.5 rounded-xl text-xs font-medium transition shrink-0 rt-pill">Inspect</button>
             <button id="toolFood" data-mode="food"
                 class="px-2.5 py-1.5 rounded-xl text-xs font-medium text-slate-300 hover:text-white hover:bg-white/10 transition shrink-0">+Fruit</button>
             <button id="toolToxin" data-mode="toxin"
@@ -660,7 +674,7 @@
                 <button id="toolSpawn" data-mode="spawn"
                     class="px-2 py-1 rounded-lg text-xs font-medium text-slate-300 hover:text-white hover:bg-white/10 transition">Spawn</button>
                 <select id="spawnSpeciesSelect"
-                    class="px-1.5 py-1 rounded-lg bg-transparent font-mono text-[11px] text-teal-200 focus:outline-none">
+                    class="px-1.5 py-1 rounded-lg bg-transparent font-mono text-[11px] rt-accent-text focus:outline-none">
                     <option value="human" class="bg-slate-950">Human</option>
                     <option value="capybara" class="bg-slate-950">Capybara</option>
                     <option value="reddeer" class="bg-slate-950">Red Deer</option>
@@ -719,7 +733,7 @@
             <button data-action="zones"
                 class="px-2.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-200 font-mono text-[11px] shrink-0">Pins</button>
             <button data-action="camera"
-                class="px-2.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-teal-200 font-mono text-[11px] shrink-0">Center</button>
+                class="px-2.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 rt-accent-text font-mono text-[11px] shrink-0">Center</button>
         </div>
     </nav>
 
@@ -753,7 +767,7 @@
             <div class="grid grid-cols-4 gap-2 font-mono text-[11px]">
                 <div class="p-2.5 rounded-xl bg-black/40 border border-white/10"><span
                         class="text-slate-400 block text-[10px]">Population</span><b id="researchPopulation"
-                        class="text-teal-300 text-sm">0</b></div>
+                        class="rt-accent-text text-sm">0</b></div>
                 <div class="p-2.5 rounded-xl bg-black/40 border border-white/10"><span
                         class="text-slate-400 block text-[10px]">Land/Ocean/Sky</span><b id="researchHabitats"
                         class="text-sky-300 text-sm">0 / 0 / 0</b></div>
@@ -766,8 +780,7 @@
             </div>
             <div class="flex flex-wrap items-center justify-between gap-2 font-mono text-[11px]">
                 <div class="flex flex-wrap gap-1.5">
-                    <button data-action="research-baseline"
-                        class="px-3 py-1.5 rounded-lg bg-teal-400/20 text-teal-200 font-semibold">Capture
+                    <button data-action="research-baseline" class="px-3 py-1.5 rounded-lg rt-pill font-semibold">Capture
                         Baseline</button>
                     <button data-action="research-record"
                         class="px-3 py-1.5 rounded-lg bg-sky-400/20 text-sky-200 font-semibold">Record
@@ -790,24 +803,24 @@
         class="hidden fixed inset-0 z-40 bg-slate-950/75 backdrop-blur-md flex items-center justify-center p-4">
         <div class="hud-glass max-w-xl w-full p-5 space-y-3 text-xs">
             <div class="flex items-center justify-between border-b border-white/10 pb-2">
-                <h2 class="text-sm font-semibold text-teal-300 uppercase tracking-wider">World Scale Explorer (1.7 m
+                <h2 class="text-sm font-semibold rt-accent-text uppercase tracking-wider">World Scale Explorer (1.7 m
                     Human Reference)</h2>
                 <button data-action="scale-guide"
                     class="text-slate-400 hover:text-white text-xl leading-none">&times;</button>
             </div>
             <p class="text-slate-300 leading-relaxed">
                 The rendered human mesh (~26.4 world units tall) is calibrated to a <b class="text-white">1.7 m</b>
-                baseline (1 world unit &approx; <span class="font-mono text-teal-300">0.0644 m</span>). Species, voxel
+                baseline (1 world unit &approx; <span class="font-mono rt-accent-text">0.0644 m</span>). Species, voxel
                 trees (~18 m), and single-storey timber houses are proportioned against this reference.
             </p>
             <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 font-mono text-[11px]">
                 <div class="p-2 rounded-lg bg-black/40 border border-white/10">Human: <b class="text-amber-300">1.70
                         m</b></div>
-                <div class="p-2 rounded-lg bg-black/40 border border-white/10">Wild Bison: <b class="text-teal-300">1.80
+                <div class="p-2 rounded-lg bg-black/40 border border-white/10">Wild Bison: <b
+                        class="rt-accent-text">1.80 m</b></div>
+                <div class="p-2 rounded-lg bg-black/40 border border-white/10">Red Deer: <b class="rt-accent-text">1.40
                         m</b></div>
-                <div class="p-2 rounded-lg bg-black/40 border border-white/10">Red Deer: <b class="text-teal-300">1.40
-                        m</b></div>
-                <div class="p-2 rounded-lg bg-black/40 border border-white/10">Capybara: <b class="text-teal-300">0.60
+                <div class="p-2 rounded-lg bg-black/40 border border-white/10">Capybara: <b class="rt-accent-text">0.60
                         m</b></div>
                 <div class="p-2 rounded-lg bg-black/40 border border-white/10">Blue Whale: <b class="text-sky-300">25.0
                         m</b></div>
@@ -839,13 +852,13 @@
         class="hidden fixed inset-0 z-40 bg-slate-950/75 backdrop-blur-md flex items-center justify-center p-4">
         <div class="hud-glass max-w-xl w-full p-5 space-y-3 text-xs">
             <div class="flex items-center justify-between border-b border-white/10 pb-2">
-                <h2 class="text-sm font-semibold text-teal-300 uppercase tracking-wider">Scientific &amp; Educational
+                <h2 class="text-sm font-semibold rt-accent-text uppercase tracking-wider">Scientific &amp; Educational
                     Applications</h2>
                 <button data-action="applications"
                     class="text-slate-400 hover:text-white text-xl leading-none">&times;</button>
             </div>
             <ul class="space-y-2 text-slate-300 leading-relaxed">
-                <li><b class="text-teal-200">Neuroevolution &amp; Neataptic ANN:</b> Observe real-time synaptic
+                <li><b class="rt-accent-text">Neuroevolution &amp; Neataptic ANN:</b> Observe real-time synaptic
                     reinforcement, structural node additions, and memetic transfer across generations.</li>
                 <li><b class="text-sky-200">Multi-Sphere Ecology:</b> Study resource competition, predator-prey evasion,
                     and stress resilience across Lithosphere, Ocean, and Atmosphere niches.</li>
@@ -860,7 +873,7 @@
         class="hidden fixed inset-0 z-40 bg-slate-950/75 backdrop-blur-md flex items-center justify-center p-4">
         <div class="hud-glass max-w-md w-full p-5 space-y-2.5 text-xs font-mono">
             <div class="flex items-center justify-between border-b border-white/10 pb-2">
-                <h2 class="text-sm font-semibold text-teal-300 uppercase">Keyboard Shortcuts</h2>
+                <h2 class="text-sm font-semibold rt-accent-text uppercase">Keyboard Shortcuts</h2>
                 <button data-action="shortcuts"
                     class="text-slate-400 hover:text-white text-xl leading-none">&times;</button>
             </div>
@@ -884,8 +897,7 @@
             <div class="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 pb-3">
                 <div class="flex items-center gap-3">
                     <div id="modalAvatarBadge"
-                        class="w-10 h-10 rounded-xl bg-teal-400/15 border border-teal-400/30 grid place-items-center font-mono font-bold text-teal-200">
-                        00</div>
+                        class="w-10 h-10 rounded-xl rt-pill grid place-items-center font-mono font-bold">00</div>
                     <div>
                         <div class="flex items-center gap-2">
                             <h2 id="modalSpecimenName" class="text-base font-bold text-white">Specimen</h2>
@@ -893,7 +905,7 @@
                                 class="font-mono text-[10px] px-2 py-0.5 rounded-md bg-amber-400/15 text-amber-300">NEURAL
                                 AGENT</span>
                         </div>
-                        <p id="modalLifeStageDetail" class="font-mono text-[11px] text-teal-300">MATURE ADULT &bull;
+                        <p id="modalLifeStageDetail" class="font-mono text-[11px] rt-accent-text">MATURE ADULT &bull;
                             LITHOSPHERE</p>
                     </div>
                 </div>
@@ -917,7 +929,7 @@
                 <div class="space-y-3">
                     <div class="p-3 rounded-xl bg-black/40 border border-white/10 space-y-2">
                         <div class="flex items-center justify-between font-mono text-[10px]">
-                            <span id="modalStrainBadge" class="text-teal-300">STRAIN_GEN_V1</span>
+                            <span id="modalStrainBadge" class="rt-accent-text">STRAIN_GEN_V1</span>
                             <span id="modalActiveNodesBadge" class="text-sky-300">11 Nodes</span>
                         </div>
                         <canvas id="cryo3dCanvas" width="380" height="210"
@@ -926,7 +938,7 @@
                             <div><span class="text-slate-400 block">Resolution</span><b id="modalResolutionVal"
                                     class="text-white">1.65 &Aring;</b></div>
                             <div><span class="text-slate-400 block">Binding</span><b id="modalBindingEnergy"
-                                    class="text-teal-300">-8.9 kcal/mol</b></div>
+                                    class="rt-accent-text">-8.9 kcal/mol</b></div>
                             <div><span class="text-slate-400 block">Sensor Field</span><b id="modalSensorArea"
                                     class="text-sky-300">420 &Aring;&sup2;</b></div>
                         </div>
@@ -947,7 +959,7 @@
                     <div class="p-3 rounded-xl bg-black/40 border border-white/10 space-y-2 font-mono text-[10px]">
                         <div class="flex items-center justify-between">
                             <span id="cryoProteinTitle" class="font-bold text-white">Species Matrix</span>
-                            <span id="cryoPatternTag" class="text-teal-300">Striped</span>
+                            <span id="cryoPatternTag" class="rt-accent-text">Striped</span>
                             <span id="cryoVitalityBadge"
                                 class="px-1.5 py-0.5 rounded bg-emerald-400/15 text-emerald-300">EXCELLENT</span>
                         </div>
@@ -972,7 +984,7 @@
                                 <div class="flex justify-between"><span>Morphogenesis</span><span
                                         id="pipeFoldPct">90%</span></div>
                                 <div class="h-1 bg-white/10 rounded">
-                                    <div id="pipeFoldBar" class="h-full bg-teal-400" style="width:90%"></div>
+                                    <div id="pipeFoldBar" class="h-full rt-bar-fill" style="width:90%"></div>
                                 </div>
                             </div>
                             <div>
@@ -1014,9 +1026,86 @@
         </div>
     </div>
 
-    <!-- Scripts: Three.js r128 -> Neataptic -> Simulation Engine -->
+    <!-- Scripts: Three.js r128 -> Neataptic -> Real-Time Color/Motion Bridge -> Simulation Engine -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/neataptic@1.4.7/dist/neataptic.js"></script>
+    <script>
+        // Real-time color & Haikei atmosphere controller synced to Solar Clock, Weather & Era
+        (function () {
+            const root = document.documentElement;
+            const clockEl = document.getElementById('hudWeatherClock');
+            const eraBadge = document.getElementById('eraTitleBadge');
+
+            function applyRealtimeColors() {
+                const txt = (clockEl?.textContent || '').toLowerCase();
+                const hourMatch = txt.match(/(\d{1,2}):(\d{2})/);
+                let hour = 11.5;
+                if (hourMatch) hour = parseInt(hourMatch[1], 10) + parseInt(hourMatch[2], 10) / 60;
+
+                const isNight = hour < 5.5 || hour >= 19.5;
+                const isGolden = (hour >= 5.5 && hour < 8) || (hour >= 17 && hour < 19.5);
+                const isStorm = txt.includes('storm');
+                const isRain = txt.includes('rain');
+                const isMist = txt.includes('mist');
+
+                let accent = '#2dd4bf';
+                let secondary = '#38bdf8';
+                let glassTop = 'rgba(8, 22, 36, 0.78)';
+                let glassBot = 'rgba(4, 12, 22, 0.86)';
+                let waveBack = 'rgba(45, 212, 191, 0.045)';
+                let waveFront = 'rgba(56, 189, 248, 0.055)';
+
+                if (isStorm) {
+                    accent = '#fb7185';
+                    secondary = '#818cf8';
+                    glassTop = 'rgba(18, 14, 32, 0.82)';
+                    glassBot = 'rgba(7, 8, 18, 0.90)';
+                    waveBack = 'rgba(251, 113, 133, 0.05)';
+                    waveFront = 'rgba(129, 140, 248, 0.06)';
+                } else if (isRain || isMist) {
+                    accent = '#38bdf8';
+                    secondary = '#2dd4bf';
+                    glassTop = 'rgba(7, 22, 34, 0.80)';
+                    glassBot = 'rgba(4, 13, 22, 0.88)';
+                    waveBack = 'rgba(56, 189, 248, 0.055)';
+                    waveFront = 'rgba(45, 212, 191, 0.045)';
+                } else if (isGolden) {
+                    accent = '#fbbf24';
+                    secondary = '#fb7185';
+                    glassTop = 'rgba(28, 16, 18, 0.78)';
+                    glassBot = 'rgba(10, 9, 18, 0.86)';
+                    waveBack = 'rgba(251, 191, 36, 0.055)';
+                    waveFront = 'rgba(251, 113, 133, 0.045)';
+                } else if (isNight) {
+                    accent = '#38bdf8';
+                    secondary = '#a78bfa';
+                    glassTop = 'rgba(6, 13, 28, 0.84)';
+                    glassBot = 'rgba(3, 7, 16, 0.92)';
+                    waveBack = 'rgba(167, 139, 250, 0.045)';
+                    waveFront = 'rgba(56, 189, 248, 0.05)';
+                }
+
+                const eraText = (eraBadge?.textContent || '').toLowerCase();
+                if (eraText.includes('hadean')) {
+                    accent = '#fb923c';
+                    secondary = '#f43f5e';
+                } else if (eraText.includes('archean') || eraText.includes('cambrian')) {
+                    accent = '#34d399';
+                    secondary = '#22d3ee';
+                }
+
+                root.style.setProperty('--rt-accent', accent);
+                root.style.setProperty('--rt-secondary', secondary);
+                root.style.setProperty('--rt-glass-top', glassTop);
+                root.style.setProperty('--rt-glass-bot', glassBot);
+                root.style.setProperty('--rt-wave-back', waveBack);
+                root.style.setProperty('--rt-wave-front', waveFront);
+            }
+
+            setInterval(applyRealtimeColors, 750);
+            document.addEventListener('DOMContentLoaded', applyRealtimeColors);
+        })();
+    </script>
     <script src="./script.js"></script>
 </body>
 
